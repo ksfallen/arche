@@ -1,0 +1,27 @@
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>yhml-test</artifactId>
+    <version>0.0.1</version>
+    <packaging>jar</packaging>
+
+    <parent>
+        <groupId>com.yhml</groupId>
+        <artifactId>yhml-base</artifactId>
+        <version>0.0.1</version>
+    </parent>
+
+    <properties>
+        <maven.install.skip>true</maven.install.skip>
+    </properties>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>com.yhml</groupId>
+            <artifactId>yhml-core</artifactId>
+        </dependency>
+    </dependencies>
+</project>
+

@@ -1,0 +1,6 @@
+com.yhml.bd.bd.compress.impl.Bzip2Compress
+com.yhml.bd.bd.compress.impl.DeflaterCompress
+com.yhml.bd.bd.compress.impl.GzipCompress
+com.yhml.bd.bd.compress.impl.Lz4Compress
+com.yhml.bd.bd.compress.impl.LzoCompress
+com.yhml.bd.bd.compress.impl.SnappyCompress

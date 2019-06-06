@@ -1,0 +1,65 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="appName" source="spring.application.name"
+                    defaultValue="spring-app"/>
+
+    <springProperty scope="context" name="LOG_PATH" source="logging.path"
+                    defaultValue="${symbol_dollar}{java.io.tmpdir:-/tmp}"/>
+    <springProperty scope="context" name="LOG_FILE" source="logging.file"
+                    defaultValue="${symbol_dollar}{appName:-spring-logback.log}"/>
+
+    <!-- 定义日志文件 输入位置 -->
+    <property name="LOG_PATH" value="/opt/logs/"/>
+    <property name="LOG_FILE" value="application.log"/>
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%15.15t] [%-40.40logger{39}] [%file:%line] - %msg%n"/>
+
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) [%15.15t] %clr([%-40.40logger{39} %line]){cyan} - %m%n</pattern>
+        </encoder>
+        <charset>UTF-8</charset>
+    </appender>
+
+    <appender name="FILE_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${symbol_dollar}{LOG_PATH}/${symbol_dollar}{LOG_FILE}.log</file>
+        <encoder>
+            <pattern>${symbol_dollar}{LOG_PATTERN}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${symbol_dollar}{LOG_PATH}/${symbol_dollar}{LOG_FILE}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+
+
+    <root level="INFO">
+    </root>
+
+
+    <!-- local -->
+    <springProfile name="default,local,test,dev">
+        <logger name="org.springframework" lwevel="info" />
+        <logger name="${pacakge}.core.mapper" level="debug"/>
+        <logger name="${pacakge}.api" level="debug"/>
+
+        <root level="INFO">
+            <appender-ref ref="CONSOLE"/>
+        </root>
+    </springProfile>
+
+    <!-- 生产环境. -->
+    <springProfile name="prod">
+        <root level="INFO">
+            <appender-ref ref="FILE_OUT"/>
+        </root>
+    </springProfile>
+
+    <jmxConfigurator/>
+</configuration>

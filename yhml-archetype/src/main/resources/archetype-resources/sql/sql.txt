@@ -1,0 +1,12 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+DROP TABLE IF EXISTS `member`;
+CREATE TABLE `member` (
+  `id` int(12) NOT NULL AUTO_INCREMENT,
+  `name` varchar(128) NOT NULL,
+  `mobile` varchar(32) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8;
+
+INSERT INTO `member` VALUES ('1', 'bins', '133333333333');

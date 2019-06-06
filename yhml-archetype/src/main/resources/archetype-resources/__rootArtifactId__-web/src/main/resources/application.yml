@@ -1,0 +1,105 @@
+# Powerby bins
+# server
+server:
+  tomcat:
+    uri-encoding: UTF-8
+    # 存放Tomcat的日志、Dump等文件的临时文件夹，默认为系统的tmp文件夹
+    #basedir: ${logging.path}
+  port: 8080
+# log
+logging:
+  file: ${spring.application.name}
+  #path: ${user.home}/logs/${spring.application.name}
+  path: /data/logs/
+
+#spring
+spring:
+  application:
+    name: saga-sys-server
+  profiles:
+    active: local
+  aop:
+  datasource:
+    druid:
+      initial-size: 20
+      max-active: 200
+      min-idle: 10
+      max-wait: 60000
+      pool-prepared-statements: true
+      #max-open-prepared-statements:
+      #validation-query:
+      #validation-query-timeout:
+      test-on-borrow: false
+      test-on-return: false
+      test-while-idle: true
+      # 配置间隔多久才进行一次检测，检测需要关闭的空闲连接，单位是毫秒
+      time-between-eviction-runs-millis: 60000
+      # 配置一个连接在池中最小生存的时间，单位是毫秒
+      min-evictable-idle-time-millis: 300000
+      #max-evictable-idle-time-millis:
+      filters: stat,wall,slf4j,config
+
+    url: jdbc:mysql://localhost:3306/common?characterEncoding=UTF8&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=false&amp;rewriteBatchedStatements=true&amp;useCompression=true
+    username: root
+    password:
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+  zipkin:
+    base-url: http://zipkin.tzsvrtest.com:9411
+    enabled: true
+    sender:
+      type: kafka
+    kafka:
+      topic: zipkin
+  kafka:
+    bootstrap-servers: kafka.tzsvrtest.com:9092
+  sleuth:
+    sampler:
+      probability: 1.0
+    scheduled:
+      enabled: false
+    enabled: true
+    web:
+      additional-skip-pattern: /livecheck.htm
+  cloud:
+    zookeeper:
+      connect-string: localhost:2181
+      discovery:
+        instance-host: ${spring.cloud.client.ip-address}
+app:
+  id: saga-sys-server
+apollo:
+  meta: http://apollo.tzsvrtest.com:8080
+  bootstrap:
+    enabled: true
+  cluster: local
+
+jasypt:
+  encryptor:
+    password: 1111
+
+
+#sharding-jdbc读写分离
+#sharding.jdbc:
+#  data-sources:
+#    ds_master:
+#      driver-class-name: com.mysql.jdbc.Driver
+#      url: jdbc:mysql://localhost:3306/common?characterEncoding=UTF8&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=false&amp;rewriteBatchedStatements=true&amp;useCompression=true
+#      username: root
+#      password:
+#    ds_slave_0:
+#      driver-class-name: com.mysql.jdbc.Driver
+#      url: jdbc:mysql://localhost:3306/common_slave?characterEncoding=UTF8&amp;zeroDateTimeBehavior=convertToNull&amp;useServerPrepStmts=false&amp;rewriteBatchedStatements=true&amp;useCompression=true
+#      username: root
+#      password:
+#  master-slave-rule:
+#    name: ds_ms
+#    master-data-source-name: ds_master
+#    slave-data-source-names: ds_slave_0
+#    load-balance-algorithm-type: round_robin
+
+#mybatis
+#mybatis-plus:
+  mapper-locations: classpath*:mybatis/sys/**.xml
+  #实体扫描，多个package用逗号或者分号分隔
+  typeAliasesPackage: com.dington.saga.sys.biz.entity

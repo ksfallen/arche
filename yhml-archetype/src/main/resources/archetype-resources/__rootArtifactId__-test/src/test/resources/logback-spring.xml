@@ -1,0 +1,40 @@
+#set( $symbol_pound = '#' )
+        #set( $symbol_dollar = '$' )
+        #set( $symbol_escape = '\' )
+        <?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
+    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
+
+    <springProperty scope="context" name="appName" source="spring.application.name" defaultValue="spring-app"/>
+
+    <!-- 定义日志文件 输入位置 -->
+    <property name="LOG_PATH" value="/opt/logs/"/>
+    <property name="LOG_FILE" value="appName.log"/>
+
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%15.15t] [%-40.40logger{39}] [%class{36}:%line] - %msg %n"/>`
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!--<pattern>%d{HH:mm:ss.SSS} %5level [%t] [%class{36}:%line] - %m %n</pattern>-->
+            <pattern>${symbol_dollar}{LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <!-- local -->
+    <logger name="org.apache.zookeeper" level="INFO"/>
+    <logger name="org.mybatis" level="DEBUG"/>
+    <logger name="org.apache.ibatis" level="DEBUG"/>
+    <logger name="java.sql" level="DEBUG"/>
+    <logger name="java.sql.PreparedStatement" value="DEBUG"/>
+    <logger name="java.sql.Connection" value="DEBUG"/>
+    <logger name="java.sql.Statement" value="DEBUG"/>
+
+    <root level="INFO">
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+    <jmxConfigurator/>
+</configuration>
+`
