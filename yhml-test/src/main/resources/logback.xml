@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <!-- 设置日志输出格式 -->
+            <pattern>[#] %m%n</pattern>
+            <!--<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p %logger{36} [%line] - %m%n</pattern>-->
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+
+    <!--myibatis log -->
+    <logger name="org.apache.ibatis" level="debug"/>
+    <logger name="java.sql.Connection" level="debug"/>
+    <logger name="java.sql.Statement" level="debug"/>
+    <logger name="java.sql.PreparedStatement" level="debug"/>
+
+
+    <root level="info">
+        <appender-ref ref="console" />
+    </root>
+</configuration>
