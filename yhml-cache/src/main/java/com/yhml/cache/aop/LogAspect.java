@@ -1,19 +1,13 @@
-package com.yhml.core.aop;
-
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Optional;
+package com.yhml.cache.aop;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import com.yhml.core.annotaton.Logger;
 import com.yhml.core.util.JsonUtil;
 import com.yhml.core.util.RequestUtil;
 import com.yhml.core.util.fastjson.SimplePropertyPreFilter;
@@ -36,7 +30,7 @@ public class LogAspect {
     public void restController() {
     }
 
-    @Pointcut("@within(com.yhml.core.annotaton.Logger) || @annotation(com.yhml.core.annotaton.Logger)")
+    @Pointcut("@within(com.yhml.cache.annotaton.Log) || @annotation(com.yhml.cache.annotaton.Log)")
     public void logger() {
     }
 
@@ -69,7 +63,7 @@ public class LogAspect {
     //     log.info("<--- {}", JsonUtil.toJsonString(ret));
     // }
 
-    @Around("restController()")
+    @Around("restController() || logger()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
         HttpServletRequest request = RequestUtil.getRequest();
         if (request != null) {
@@ -108,24 +102,24 @@ public class LogAspect {
 
 
     // 获取注解中的值
-    private String getValue(JoinPoint joinPoint) {
-        try {
-            Method[] methods = joinPoint.getTarget().getClass().getMethods();
-            Optional<Method> optional =
-                    Arrays.stream(methods).filter(method -> method.getName().equals(joinPoint.getSignature().getName())).findFirst();
-
-            if (optional.isPresent()) {
-                Method method = optional.get();
-                if (method.getParameterTypes().length == joinPoint.getArgs().length) {
-                    return method.getAnnotation(Logger.class).value();
-                }
-            }
-        } catch (Exception e) {
-            log.error("getSource error", e);
-        }
-
-        return null;
-    }
+    // private String getValue(JoinPoint joinPoint) {
+    //     try {
+    //         Method[] methods = joinPoint.getTarget().getClass().getMethods();
+    //         Optional<Method> optional =
+    //                 Arrays.stream(methods).filter(method -> method.getName().equals(joinPoint.getSignature().getName())).findFirst();
+    //
+    //         if (optional.isPresent()) {
+    //             Method method = optional.get();
+    //             if (method.getParameterTypes().length == joinPoint.getArgs().length) {
+    //                 return method.getAnnotation(LogAction.class).value();
+    //             }
+    //         }
+    //     } catch (Exception e) {
+    //         log.error("getSource error", e);
+    //     }
+    //
+    //     return null;
+    // }
 
     protected String toJson(Object result) {
         return JsonUtil.toJsonString(result, filter);

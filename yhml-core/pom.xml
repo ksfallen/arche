@@ -1,20 +1,18 @@
 <project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-
-    <artifactId>yhml-core</artifactId>
-    <version>0.0.1</version>
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>com.yhml</groupId>
         <artifactId>yhml-base</artifactId>
-        <version>0.0.1</version>
+        <version>1.0.0</version>
     </parent>
+
+    <artifactId>yhml-core</artifactId>
+    <version>${parent.version}</version>
+    <packaging>jar</packaging>
 
     <properties>
         <maven.install.skip>false</maven.install.skip>
-		<jsoup.version>1.11.3</jsoup.version>
     </properties>
 
     <dependencies>
@@ -25,6 +23,10 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-webmvc</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-redis</artifactId>
         </dependency>
         <dependency>
             <groupId>org.aspectj</groupId>
@@ -144,11 +146,6 @@
             <groupId>io.reactivex.rxjava2</groupId>
             <artifactId>rxjava</artifactId>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>redis.clients</groupId>-->
-<!--            <artifactId>jedis</artifactId>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.belerweb</groupId>
             <artifactId>pinyin4j</artifactId>
@@ -158,9 +155,16 @@
             <artifactId>redisson</artifactId>
         </dependency>
         <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+        </dependency>
+        <dependency>
             <groupId>org.jsoup</groupId>
             <artifactId>jsoup</artifactId>
-            <version>${jsoup.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
         </dependency>
     </dependencies>
 </project>

@@ -6,9 +6,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
-
-import com.yhml.core.util.RequestUtil;
 
 /**
  *
@@ -19,11 +18,12 @@ import com.yhml.core.util.RequestUtil;
 public class BaseController {
     protected Logger log = LoggerFactory.getLogger(getClass());
 
-    // @Autowired
-    // protected HttpServletRequest request;
+    @Autowired
+    protected HttpServletRequest request;
 
     protected HttpServletRequest getRequest() {
-        return RequestUtil.getRequest();
+        // return RequestUtil.getRequest();
+        return request;
     }
 
     public String getString(String param, String defaultValue) {

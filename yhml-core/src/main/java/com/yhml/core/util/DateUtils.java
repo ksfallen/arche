@@ -6,24 +6,18 @@ import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.Date;
+import java.util.Optional;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateTime;
+import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public abstract class DateUtil extends cn.hutool.core.date.DateUtil {
+public abstract class DateUtils extends cn.hutool.core.date.DateUtil {
 
-    public static final String DATE_FORMAT = "yyyy-MM-dd";
-    public static final String DATE_FORMAT_NO_DELIMITER = "yyyyMMdd";
-    public static final String DATE_FORMAT_YYYY = "yyyy";
-    public static final String TIME_FORMAT = "HH:mm:ss";
-    public static final String TIME_FORMAT_NO_SEC = "HH:mm";
-    public static final String DATE_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss";
-    public static final String TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.S";
-    public static final String DATE_TIME_FORMAT_NO_SEC = "yyyy-MM-dd HH:mm";
-    public static final String DATE_TIME_FORMAT_NO_DELIMITER = "yyyyMMddHHmmss";
-    public static final String[] DEFAULT_FORMATS = {TIMESTAMP_FORMAT, DATE_TIME_FORMAT, DATE_FORMAT, TIME_FORMAT};
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyyMMddHHmmssSSS");
+    public static final ZoneOffset GMT_8 = ZoneOffset.ofHours(8);
 
     public static void main(String[] args) {
         System.out.println("Instant.now() = " + Instant.now());
@@ -33,14 +27,21 @@ public abstract class DateUtil extends cn.hutool.core.date.DateUtil {
         System.out.println("getCurrentTime() = " + getCurrentTime());
         System.out.println(LocalDate.now().minusDays(1).getDayOfWeek().getValue());
         System.out.println("getWeek() = " + getWeek());
+        System.out.println("getDiffTimeStr(DateUtil.date(), DateUtil.offsetWeek(DateUtil.date(), 1)) = " + getDiffTimeStr(DateUtil.date()
+                , DateUtil.offsetWeek(DateUtil.date(), 1)));
+        System.out.println(DateUtil.formatBetween(DateUtil.date(), DateUtil.offsetWeek(DateUtil.date(), 1)));
     }
 
     public static LocalDateTime toLocalDateTime(Date date) {
-        return date.toInstant().atOffset(ZoneOffset.of("+8")).toLocalDateTime();
+        return date.toInstant().atOffset(GMT_8).toLocalDateTime();
     }
 
     public static Date toDate(LocalDateTime localDateTime) {
-        return Date.from(localDateTime.toInstant(ZoneOffset.of("+8")));
+        return Date.from(localDateTime.toInstant(GMT_8));
+    }
+
+    public static Date toDate(LocalDate localDate) {
+        return toDate(localDate.atStartOfDay());
     }
 
     public static Long unixTimestamp() {
@@ -52,95 +53,85 @@ public abstract class DateUtil extends cn.hutool.core.date.DateUtil {
     }
 
 
-    /**
-     * 方法会自动识别一些常用格式，包括：
-     * yyyy-MM-dd HH:mm:ss
-     * yyyy-MM-dd
-     * HH:mm:ss
-     * yyyy-MM-dd HH:mm
-     * yyyy-MM-dd HH:mm:ss.SSS
-     *
-     * @param dateString
-     */
-    // public static Date parse(String dateString) {
-    //     return DateUtil.parse(dateString);
-    // }
+
     public static String getCurrentTime() {
-        return date().toString();
+        return DateUtil.now();
     }
 
-    public static String getCurrentTime(String dateFormat) {
-        return now();
+    public static String getCurrentTime(String pattern) {
+        return LocalDateTime.now().format(DateTimeFormatter.ofPattern(pattern));
     }
 
     /**
      * 将字符串转换成Date类型
      *
      * @param dateString
-     * @param dateFormat
+     * @param pattern
      * @return
      */
-    public static Date parseStr(String dateString, String dateFormat) {
-        if (StringUtil.isEmpty(dateFormat)) {
+    public static Date parseText(String dateString, String pattern) {
+        if (StringUtil.isEmpty(pattern)) {
             return null;
         }
 
-        return parse(dateString, dateFormat);
+        DateTime dateTime = null;
+        try {
+            dateTime = DateUtil.parse(dateString, pattern);
+        } catch (Exception e) {
+            log.error("", e);
+
+        }
+
+        return dateTime;
+    }
+
+
+    /**
+     * 将Date类型转化成字符串
+     */
+    public static String format(Date date, String format) {
+        return date == null ? null : DateUtil.format(date, format);
+    }
+
+
+    /**
+     * 在传入的日期基础上往后加n天
+     *
+     * @param date
+     * @param n    要加的天数
+     * @return
+     */
+    public static Date addDay(Date date, int n) {
+        return DateUtil.offsetDay(date, n);
+    }
+
+    public static Date backDay(Date date, int n) {
+        return addDay(date, -n);
     }
 
     //
-    // /**
-    //  * 将Date类型转化成字符串
-    //  *
-    //  * @param date
-    //  * @param dateFormat
-    //  * @return
-    //  */
-    // public static String format(Date date, String dateFormat) {
-    //     if (date == null) {
-    //         return "";
-    //     } else {
-    //         return DateFormatUtils.format(date, dateFormat);
-    //     }
-    // }
+    /**
+     * 判断当前时间是否在开始时间与结束时间之间
+     *
+     * @param time  当前时间
+     * @param begin 开始时间
+     * @param end   结束时间
+     * @return boolen类型，true表示在两者间，false表示不在两者之间
+     */
+    public static boolean isTimeIn(Date time, Date begin, Date end) {
+        return time.getTime() >= begin.getTime() && time.getTime() <= end.getTime();
+    }
     //
-    // /**
-    //  * 在传入的日期基础上往后加n天
-    //  *
-    //  * @param date
-    //  * @param n    要加的天数
-    //  * @return
-    //  */
-    // public static Date addDay(Date date, int n) {
-    //     return DateUtils.addDays(date, n);
-    // }
-    //
-    // public static Date backDay(Date date, int n) {
-    //     return addDays(date, -n);
-    // }
-    //
-    // /**
-    //  * 判断当前时间是否在开始时间与结束时间之间
-    //  *
-    //  * @param time  当前时间
-    //  * @param begin 开始时间
-    //  * @param end   结束时间
-    //  * @return boolen类型，true表示在两者间，false表示不在两者之间
-    //  */
-    // public static boolean isTimeIn(Date time, Date begin, Date end) {
-    //     return time.getTime() >= begin.getTime() && time.getTime() <= end.getTime();
-    // }
-    //
-    // /**
-    //  * 判断指定日期是星期几
-    //  *
-    //  * @param time   要判断的日期
-    //  * @param format 输入的日期格式
-    //  * @return 返回数字[1:星期一，2：星期二，....，7：星期日]
-    //  */
-    // public static int getWeek(String time, String format) throws ParseException {
-    //     return getWeek(DateUtils.parseDate(time, format));
-    // }
+
+    /**
+     * 判断指定日期是星期几
+     *
+     * @return 返回数字[1:星期一，2：星期二，....，7：星期日]
+     */
+    public static int getWeek(String dateTimeStr, String pattern) {
+        DateTimeFormatter df = DateTimeFormatter.ofPattern(pattern);
+        return LocalDateTime.parse(dateTimeStr, df).getDayOfWeek().getValue();
+    }
     //
 
     /**
@@ -149,69 +140,77 @@ public abstract class DateUtil extends cn.hutool.core.date.DateUtil {
      * @return 返回数字[1:星期一，2：星期二，....，7：星期日]
      */
     public static int getWeek(Date date) {
-        return date(date).getFirstDayOfWeek().getValue();
+        return toLocalDateTime(date).getDayOfWeek().getValue();
     }
 
     public static int getWeek() {
-        return date().dayOfWeek();
+        return LocalDate.now().getDayOfWeek().getValue();
     }
-    //
-    // public static void main(String[] args) {
-    //     System.out.println(getWeek(new Date()));
-    //     DayOfWeek week = LocalDate.now().getDayOfWeek();
-    //     System.out.println(week.getValue());
-    // }
-    //
-    // /**
-    //  * 判断是否为有效的身份证日期
-    //  *
-    //  * @param date
-    //  * @return
-    //  */
-    // public static boolean isIdDate(String date) {
-    //     return parse(date, "yyyyMMdd") != null;
-    // }
-    //
-    // /**
-    //  * 将字符串日期转成Timestamp类型
-    //  *
-    //  * @param dateString 字符串类型的时间
-    //  * @param format     字符串类型的时间要转换的格式
-    //  * @return Timestamp类型的时间戳
-    //  */
-    // public static java.sql.Timestamp parse2Timestamp(String dateString, String format) throws ParseException {
-    //     return new java.sql.Timestamp(DateUtils.parseDate(dateString, format).getTime());
-    // }
-    //
-    // /**
-    //  * 获取两个时间的间隔,字符串表示
-    //  *
-    //  * @param start
-    //  * @param end
-    //  */
-    // public static String getDiffTimeStr(Date start, Date end) {
-    //     String time = "";
-    //     if (start != null && end != null) {
-    //         int t = (int) (end.getTime() - start.getTime()) / 1000;
-    //         String h = "";
-    //         String m = "";
-    //         String s = "";
-    //         h = (int) t / 3600 + "";
-    //         m = (int) (t % 3600) / 60 + "";
-    //         s = t % 60 + "";
-    //         if (h.length() <= 1) {
-    //             h = "0" + h;
-    //         }
-    //         if (m.length() <= 1) {
-    //             m = "0" + m;
-    //         }
-    //         if (s.length() <= 1) {
-    //             s = "0" + s;
-    //         }
-    //         time = h + ":" + m + ":" + s;
-    //     }
-    //     return time;
-    // }
+
+
+    /**
+     * 判断是否为有效的身份证日期
+     *
+     * @param date
+     * @return
+     */
+    public static boolean isIdDate(String date) {
+        if (StringUtil.isEmpty(date)) {
+            return false;
+        }
+
+        date = date.trim();
+
+        if (date.length() != DatePattern.PURE_DATE_PATTERN.length()) {
+            return false;
+        }
+
+        Optional<Date> optional = Optional.ofNullable(parseText(date, DatePattern.PURE_DATE_PATTERN));
+
+        return optional.isPresent() && StringUtil.equals(date, format(optional.get(), DatePattern.PURE_DATE_PATTERN));
+    }
+
+    /**
+     * 将字符串日期转成Timestamp类型
+     *
+     * @param dateString 字符串类型的时间
+     * @param format     字符串类型的时间要转换的格式
+     * @return Timestamp类型的时间戳
+     */
+    public static java.sql.Timestamp parse2Timestamp(String dateString, String format) {
+        return new java.sql.Timestamp(DateUtil.parse(dateString, format).getTime());
+    }
+
+
+    /**
+     * 获取两个时间的间隔,字符串表示
+     *
+     * @param start
+     * @param end
+     */
+    public static String getDiffTimeStr(Date start, Date end) {
+        String time = "";
+        if (start != null && end != null) {
+            int t = (int) (end.getTime() - start.getTime()) / 1000;
+            String h = "";
+            String m = "";
+            String s = "";
+            h = (int) t / 3600 + "";
+            m = (int) (t % 3600) / 60 + "";
+            s = t % 60 + "";
+            if (h.length() <= 1) {
+                h = "0" + h;
+            }
+            if (m.length() <= 1) {
+                m = "0" + m;
+            }
+            if (s.length() <= 1) {
+                s = "0" + s;
+            }
+            time = h + ":" + m + ":" + s;
+        }
+        return time;
+    }
     //
     // /**
     //  * 获取两个日期之间间隔的分钟数

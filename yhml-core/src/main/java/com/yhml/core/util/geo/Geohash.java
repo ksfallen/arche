@@ -2,7 +2,7 @@ package com.yhml.core.util.geo;
 
 import java.util.*;
 
-import com.yhml.core.util.Arith;
+import com.yhml.core.util.MathUtil;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -30,7 +30,7 @@ public class Geohash {
 
     /**
      * 1 2500km 2 630km 3 78km 4 30km
-     * 5 2.4km  6 610m; 7 76m  8 19m
+     * 5 2.4km  6 610m; 7 76m  8 19m``````
      */
     @Getter
     private int hashLength = 12; //经纬度转化为geohash长度
@@ -371,8 +371,8 @@ public class Geohash {
         double latValue = getGeoHashMid(lat.toString(), LocationBean.MINLAT, LocationBean.MAXLAT);
         double lngValue = getGeoHashMid(lng.toString(), LocationBean.MINLNG, LocationBean.MAXLNG);
 
-        latValue = Arith.round(latValue, 6);
-        lngValue = Arith.round(lngValue, 6);
+        latValue = MathUtil.round(latValue, 6);
+        lngValue = MathUtil.round(lngValue, 6);
 
         LocationBean location = new LocationBean(latValue, lngValue);
         return location;

@@ -14,6 +14,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class IdGen {
 
+    private RedisClientUtil redisClientUtil;
+
     public String getIdPrefix() {
         return getIdPrefix(new Date());
     }
@@ -38,7 +40,7 @@ public class IdGen {
 
     public Long getOrderId(String prefix) {
         try {
-            Long incr = RedisClientUtil.incr(prefix);
+            Long incr = redisClientUtil.incr(prefix);
             String orderId = "t_order_id" + prefix + String.format("%1$05d", incr);
             return Long.valueOf(orderId);
         } catch (Exception e) {

@@ -17,27 +17,27 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.alibaba.fastjson.serializer.SimpleDateFormatSerializer;
 import com.yhml.core.base.bean.BaseBean;
-import com.yhml.core.base.bean.ResultBean;
+import com.yhml.core.base.bean.Result;
 import com.yhml.core.util.fastjson.NullValueFilter;
 
-public class JsonUtil {
+import lombok.extern.slf4j.Slf4j;
 
-    private static final SerializeFilter[] filters;
+@Slf4j
+public class JsonUtil {
+    public static final SimpleDateFormatSerializer simpleDateFormat = new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss");
     public static final SerializerFeature[] features;
-    public static final String dateFormat = "yyyy-MM-dd HH:mm:ss";
-    public static final SimpleDateFormatSerializer simpleDateFormat = new SimpleDateFormatSerializer(dateFormat);
-    private static final SerializeConfig config;
+    public static final List<SerializeFilter> filterList = new ArrayList<>();
+
+    private static final SerializeFilter[] EMPTY_FILTER = null;
+    private static final SerializeConfig config = SerializeConfig.globalInstance;
 
     static {
-        config = new SerializeConfig();
         config.put(java.util.Date.class, simpleDateFormat);
         // config.put(java.sql.Date.class, new DateSerializer()); 		// 使用和json-lib兼容的日期输出格式
 
         features = getFeatures();
 
-        List<SerializeFilter> filterList = new ArrayList<>();
         filterList.add(new NullValueFilter());
-        filters = filterList.toArray(new SerializeFilter[0]);
     }
 
     public static SerializerFeature[] getFeatures() {
@@ -69,24 +69,36 @@ public class JsonUtil {
             return (String) o;
         }
 
-        return JSON.toJSONString(o, config, features);
-    }
-
-    public static String toJsonString(Object o, SerializerFeature... feature) {
-        return JSON.toJSONString(o, config, feature);
+        return toJson(o, config, EMPTY_FILTER, features);
     }
 
     /**
      * 不输出空字段
      *
      * @param o
+     * @param feature
      * @return
      */
-    public static String toJsonStringWithoutNull(Object o) {
-        if (o == null) {
-            return "";
+    public static String toJsonString(Object o, SerializerFeature ... feature) {
+        return toJson(o, null, EMPTY_FILTER, feature);
+    }
+
+    private static String toJson(Object object, SerializeConfig config, SerializeFilter[] filters, SerializerFeature... features) {
+        try {
+            if (config == null) {
+                config = SerializeConfig.globalInstance;
+            }
+
+            return JSON.toJSONString(object, config, filters, features);
+        } catch (Exception e) {
+            log.error("toJson error:{}, value:{}", e.getMessage(), object);
         }
-        return JSON.toJSONString(o);
+
+        return "";
+    }
+
+    public static String toJsonString(Object object, SerializeFilter... filters) {
+        return toJson(object, config, filters);
     }
 
     /**
@@ -101,7 +113,14 @@ public class JsonUtil {
         if (StringUtil.isBlank(json)) {
             return null;
         }
-        return JSON.parseObject(json, clazz);
+
+        try {
+            return JSON.parseObject(json, clazz);
+        } catch (Exception e) {
+            log.error("parseObject error:{}, value:{}", e.getMessage(), json);
+        }
+
+        return null;
     }
 
     /**
@@ -113,7 +132,7 @@ public class JsonUtil {
      * @param <T>
      * @return
      */
-    public static <T extends BaseBean> ResultBean<T> parseByTypeReference(String json, TypeReference<ResultBean<T>> typeReference) {
+    public static <T extends BaseBean> Result<T> parseByTypeReference(String json, TypeReference<Result<T>> typeReference) {
         return JSON.parseObject(json, typeReference);
     }
 

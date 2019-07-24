@@ -1,19 +1,26 @@
-import java.util.ArrayList;
-import java.util.List;
+#set($symbol_pound='#')
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
+package ${package};
 
+
+import java.io.File;
+import java.util.*;
+
+import org.junit.*;
+import org.springframework.util.FileSystemUtils;
+
+import com.baomidou.mybatisplus.annotation.DbType;
 import com.baomidou.mybatisplus.generator.AutoGenerator;
 import com.baomidou.mybatisplus.generator.InjectionConfig;
 import com.baomidou.mybatisplus.generator.config.*;
 import com.baomidou.mybatisplus.generator.config.converts.MySqlTypeConvert;
 import com.baomidou.mybatisplus.generator.config.po.TableInfo;
-import com.baomidou.mybatisplus.generator.config.rules.DbType;
+import com.baomidou.mybatisplus.generator.config.rules.DbColumnType;
+import com.baomidou.mybatisplus.generator.config.rules.IColumnType;
 import com.baomidou.mybatisplus.generator.config.rules.NamingStrategy;
 
 import lombok.extern.slf4j.Slf4j;
-
-#set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' ) package ${package}.core;
 
 @Slf4j
 public class SimpleMybatisPlusGenerator {

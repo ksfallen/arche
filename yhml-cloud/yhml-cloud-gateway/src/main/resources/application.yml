@@ -1,0 +1,88 @@
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+server:
+  port: 5000
+
+spring:
+  application:
+    name: cloud-gateway
+  cloud:
+    # 限流
+#    sentinel:
+#      transport:
+#        dashboard: lyq-sentinel:7000
+    loadbalancer:
+      retry:
+        enabled: false
+    zookeeper:
+      connect-string: lyq-zk:2181
+      discovery:
+        root: dev
+
+  http:
+    multipart:
+      enabled: true
+      max-file-size: 5MB
+
+zuul:
+  ignored-patterns: /**/feign/**,/**/hystrix/**
+
+# feign 配置
+feign:
+  hystrix:
+    enabled: false
+  sentinel:
+    enabled: true
+  okhttp:
+    enabled: true
+  httpclient:
+    enabled: false
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 10000
+        writeTimeout: 20000
+  compression:
+    request:
+      enabled: true
+    response:
+      enabled: true
+
+# hystrix 配置
+#hystrix:
+#  command:
+#    default:
+#      execution:
+#        isolation:
+#          strategy: SEMAPHORE
+#          thread:
+#            timeoutInMilliseconds: 60000
+#  shareSecurityContext: true
+
+
+ribbon:
+  connect-timeout: 10000
+  read-timeout: 20000
+  max-atuo-retries: 0
+# 客户端负载均衡的Client
+#  eager-load:
+#    enabled: true
+#    clients: simple-service
+
+#    api:
+#      path: /api/**
+#      url: http://localhost:8080
+#    api-a:
+#      path: /api-a/**
+#      serviceId: hello-service
+#    api-b:
+#      path: /api-b/**
+#      serviceId: feign-consumer
+#    hello-service: /api-a/**
+#    feign-consumer: /api-b/**
+

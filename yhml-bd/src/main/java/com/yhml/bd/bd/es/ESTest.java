@@ -8,8 +8,8 @@ import org.elasticsearch.common.xcontent.XContentFactory;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.simple.common.es.model.MappingsHelper;
-import com.simple.common.util.JsonUtil;
+import com.yhml.bd.bd.es.model.MappingsHelper;
+import com.yhml.core.util.JsonUtil;
 
 
 /**
@@ -36,7 +36,7 @@ public class ESTest {
         config.setIndexName(indexName);
         config.setTypeName(typeName);
         config.setUserName("elastic");
-        config.setPassword("xinguangnet@2018");
+        config.setPassword("yhml@2018");
 
         client = ESClientFactory.build(config).getClient();
     }

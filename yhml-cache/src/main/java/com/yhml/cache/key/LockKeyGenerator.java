@@ -1,54 +1,55 @@
-package com.yhml.cache.lock;
-
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+package com.yhml.cache.key;
 
 import org.aopalliance.intercept.MethodInvocation;
-import org.springframework.context.expression.MethodBasedEvaluationContext;
 import org.springframework.core.DefaultParameterNameDiscoverer;
 import org.springframework.core.ParameterNameDiscoverer;
-import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.ExpressionParser;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.util.StringUtils;
 
-import com.yhml.cache.annotaton.LockAction;
+import com.yhml.cache.annotaton.Lock;
 
 
-/**
- * @author: Jfeng
- * @date: 2019-07-15
- */
-public class LockKeyGenerator {
+public class LockKeyGenerator extends AbstractKeyGenerator {
     private static final ParameterNameDiscoverer NAME_DISCOVERER = new DefaultParameterNameDiscoverer();
     private static final ExpressionParser PARSER = new SpelExpressionParser();
 
-
-    public String getKeyName(MethodInvocation invocation, LockAction lock) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(lock.prefix());
-
-        if (lock.keys().length > 1 || !"".equals(lock.keys()[0])) {
-            sb.append(this.getSpelDefinitionKey(lock.keys(), invocation.getMethod(), invocation.getArguments()));
+    public String getKey(MethodInvocation invocation, Lock lock) {
+        if (lock == null) {
+            return null;
         }
 
-        return sb.toString();
+        return getKey(invocation.getMethod(), invocation.getArguments(), lock.prefix(), lock.keys(), lock.delimiter());
     }
 
-    private String getSpelDefinitionKey(String[] definitionKeys, Method method, Object[] parameterValues) {
-        EvaluationContext context = new MethodBasedEvaluationContext((Object)null, method, parameterValues, NAME_DISCOVERER);
-        List<String> definitionKeyList = new ArrayList(definitionKeys.length);
 
-        for(int index = 0; index < definitionKeys.length; ++index) {
-            String definitionKey = definitionKeys[index];
-
-            if (definitionKey != null && !definitionKey.isEmpty()) {
-                String key = PARSER.parseExpression(definitionKey).getValue(context).toString();
-                definitionKeyList.add(key);
-            }
-        }
-
-        return StringUtils.collectionToDelimitedString(definitionKeyList, ".", "", "");
-    }
+    // public String getKey(ProceedingJoinPoint pjp) {
+        // Method method = ((MethodSignature) pjp.getSignature()).getMethod();
+        //
+        // CacheLock lock = method.getAnnotation(CacheLock.class);
+        //
+        // if (lock == null) {
+        //     return null;
+        // }
+        //
+        // final Object[] paramValues = pjp.getArgs();
+        // final Parameter[] parameters = method.getParameters();
+        //
+        // StringBuilder builder = new StringBuilder();
+        //
+        // // 默认解析方法带 CacheParam 注解的属性
+        // // key prefix:param:paramvalue
+        // for (int i = 0; i < parameters.length; i++) {
+        //     Parameter parameter = parameters[i];
+        //     final CacheParam annotation = parameter.getAnnotation(CacheParam.class);
+        //
+        //     if (annotation != null) {
+        //         String paraName = StringUtil.hasText(annotation.name())? annotation.name() : parameter.getName();
+        //         builder.append(lock.delimiter()).append(paraName).append(lock.delimiter()).append(paramValues[i]);
+        //     }
+        //
+        // }
+        //
+        // return lock.prefix() + builder.toString();
+        // return null;
+    // }
 }

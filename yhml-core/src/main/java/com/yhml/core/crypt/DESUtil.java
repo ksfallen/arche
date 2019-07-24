@@ -69,7 +69,7 @@ public class DESUtil {
         try {
             for (int i = 0; i < str.length(); i += 2) {
                 // b[i / 2] = (byte) Integer
-                // .decode("0x" + str.substring(i, i + 2)).intValue();
+                // .decodeBase64("0x" + str.substring(i, i + 2)).intValue();
                 int byteValue = Integer.parseInt(str.substring(i, i + 2), 16);
                 b[i / 2] = (byte) byteValue;
             }

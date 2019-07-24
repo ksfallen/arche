@@ -1,14 +1,14 @@
-package com.yhml.lock.aop;
+package com.yhml.cache.aop;
 
 import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 
+import com.yhml.cache.annotaton.Lock;
+import com.yhml.cache.key.LockKeyGenerator;
+import com.yhml.cache.lock.LockInfo;
+import com.yhml.cache.lock.LockTemplate;
 import com.yhml.core.base.BaseException;
 import com.yhml.core.base.ErrorMessge;
-import com.yhml.lock.LockInfo;
-import com.yhml.lock.LockKeyGenerator;
-import com.yhml.lock.LockTemplate;
-import com.yhml.lock.annotation.LockAction;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,9 +27,9 @@ public class LockInterceptor implements MethodInterceptor {
 
         Object result;
         try {
-            LockAction lock = invocation.getMethod().getAnnotation(LockAction.class);
-            String keyName = this.lockKeyGenerator.getKeyName(invocation, lock);
-            lockInfo = this.lockTemplate.lock(keyName, lock.expire(), lock.timeout());
+            Lock lock = invocation.getMethod().getAnnotation(Lock.class);
+            String keyName = this.lockKeyGenerator.getKey(invocation, lock);
+            lockInfo = this.lockTemplate.lock(keyName, lock.expire(), lock.timeout(), lock.timeUnit());
 
             if (null == lockInfo) {
                 log.info("锁资源获取失败");

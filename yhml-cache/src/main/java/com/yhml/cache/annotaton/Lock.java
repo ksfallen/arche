@@ -7,7 +7,7 @@ import java.util.concurrent.TimeUnit;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @LocalCache
-public @interface LockAction {
+public @interface Lock {
     /**
      * 锁key的前缀
      */

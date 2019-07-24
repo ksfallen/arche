@@ -1,6 +1,7 @@
 package com.yhml.cache.annotaton;
 
 import java.lang.annotation.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * 本地分布式锁
@@ -12,7 +13,7 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 @Inherited
-public @interface RdisCache {
+public @interface RedisCache {
 
     /**
      * key的前缀
@@ -29,4 +30,13 @@ public @interface RdisCache {
      * key1.key2.ke要
      */
     String delimiter() default ".";
+
+    /**
+     * key过期秒数,默认为10秒
+     * @return
+     */
+    long expire() default 10L;
+
+    TimeUnit timeUnit() default TimeUnit.SECONDS;
+
 }

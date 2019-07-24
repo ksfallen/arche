@@ -23,24 +23,42 @@ import com.yhml.ssr.baidu.WordsResult;
 
 import lombok.Cleanup;
 
-public class Main {
+public class SSRRun {
 
     String output = ".";
     boolean openLink = false;
 
     public static void main(String[] args) throws Exception {
-        Main test = new Main();
+        SSRRun bean = new SSRRun();
 
+        URL resource = SSRRun.class.getResource("");
+
+        if (resource != null) {
+            String path = resource.getPath().replace("file:", "");
+            path = path.substring(0, path.lastIndexOf("yhml-ssr"));
+
+            if (!resource.getPath().contains(".jar!")) {
+                path += "yhml-ssr/";
+            }
+
+            bean.output = path;
+        }
+
+        // @formatter:off
         for (int index = 0; index < args.length; index++) {
             String value = args[index];
             switch (index) {
-                case 1: test.openLink =  Boolean.valueOf(value); break;
-                case 2: test.output = value; break;
+                case 1: bean.openLink =  Boolean.valueOf(value); break;
+                case 2: bean.output = value; break;
                 default:
             }
         }
+        // @formatter:on
 
-        test.ssr();
+        System.out.println("[#] output: " + bean.output);
+        System.out.println("[#] openLink: " + bean.openLink);
+
+        bean.ssr();
     }
 
     public void ssr() throws Exception {
@@ -51,13 +69,12 @@ public class Main {
         String src = "";
         for (Element image : images) {
             src = image.attr("src");
-            System.out.println("[#] img src:" + src );
+            System.out.println("[#] img src: " + src);
             if (src.contains("master")) {
                 break;
             }
         }
 
-        // https://raw.githubusercontent.com/Alvin9999/PAC/master/ss/ssr4104.PNG
         System.out.println("[#] ssr image: " + src);
 
         if (src == null || src.length() == 0) {
@@ -68,7 +85,7 @@ public class Main {
         File imageFile = new File(file);
 
         if (!imageFile.exists()) {
-            System.out.println("[#] image file 不存在:" +imageFile.getAbsolutePath());
+            System.out.println("[#] image file 不存在: " + imageFile.getAbsolutePath());
             return;
         }
 
@@ -78,14 +95,15 @@ public class Main {
 
         SSRBean bean = new SSRBean();
         List<SSRBean> list = new ArrayList<>();
-        for (WordsResult word :  words.getWordsResult()) {
+        for (WordsResult word : words.getWordsResult()) {
             String value = word.getWords().trim().replaceAll("[()\\s协议混淆]", "");
 
-            if (i == 0 ) {
+            if (i == 0) {
                 bean = new SSRBean();
                 list.add(bean);
             }
 
+            // @formatter:off
             switch (i++) {
                 case 0: break;
                 case 1: bean.setServer(getWord(value)); break;
@@ -99,6 +117,7 @@ public class Main {
                     break;
                 default:
             }
+            // @formatter:on
         }
 
         System.out.println("\n============");
@@ -125,7 +144,7 @@ public class Main {
         String pathname = "";
         try {
             if (StringUtil.isBlank(url)) {
-                System.out.println("url is blank:" + url);
+                System.out.println("url is blank: " + url);
                 return pathname;
             }
 

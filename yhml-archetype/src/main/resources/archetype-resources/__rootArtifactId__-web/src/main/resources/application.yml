@@ -1,4 +1,3 @@
-# Powerby bins
 # server
 server:
   tomcat:
@@ -6,19 +5,13 @@ server:
     # 存放Tomcat的日志、Dump等文件的临时文件夹，默认为系统的tmp文件夹
     #basedir: ${logging.path}
   port: 8080
-# log
-logging:
-  file: ${spring.application.name}
-  #path: ${user.home}/logs/${spring.application.name}
-  path: /data/logs/
 
 #spring
 spring:
   application:
-    name: saga-sys-server
+    name: XXX
   profiles:
-    active: local
-  aop:
+    active: dev
   datasource:
     druid:
       initial-size: 20
@@ -66,13 +59,6 @@ spring:
       connect-string: localhost:2181
       discovery:
         instance-host: ${spring.cloud.client.ip-address}
-app:
-  id: saga-sys-server
-apollo:
-  meta: http://apollo.tzsvrtest.com:8080
-  bootstrap:
-    enabled: true
-  cluster: local
 
 jasypt:
   encryptor:
@@ -98,8 +84,7 @@ jasypt:
 #    slave-data-source-names: ds_slave_0
 #    load-balance-algorithm-type: round_robin
 
-#mybatis
-#mybatis-plus:
-  mapper-locations: classpath*:mybatis/sys/**.xml
+mybatis-plus:
+  mapper-locations: classpath*:mybatis/*/*.xml
   #实体扫描，多个package用逗号或者分号分隔
-  typeAliasesPackage: com.dington.saga.sys.biz.entity
+  typeAliasesPackage: XXX.entity

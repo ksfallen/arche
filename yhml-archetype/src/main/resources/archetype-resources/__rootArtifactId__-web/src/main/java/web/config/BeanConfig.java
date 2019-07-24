@@ -1,3 +1,8 @@
+#set($symbol_pound='#')
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
+package ${package}.web.config;
+
 import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -17,11 +22,7 @@ import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 
 import lombok.extern.slf4j.Slf4j;
 
-#set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' )
 
-        package ${package}.web.config;
 
 @Component
 @Slf4j

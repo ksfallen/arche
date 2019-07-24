@@ -1,19 +1,18 @@
 package com.yhml.core.util;
 
-import java.net.URI;
-import java.util.Enumeration;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.collections.MapUtils;
-import org.springframework.http.*;
-import org.springframework.util.MultiValueMap;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.CollectionUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.yhml.core.context.SpringContext;
-
+import cn.hutool.core.date.TimeInterval;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -23,78 +22,84 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RestTemplateUtil {
 
-    private static RestTemplate restTemplate;
+    @Setter
+    private RestTemplate restTemplate = new RestTemplate();
 
-    private static HttpHeaders headers = new HttpHeaders();
 
-    // private static HttpEntity<String> request;
-
-    static {
-        restTemplate = SpringContext.getBean(RestTemplate.class);
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-        // headers.setAccept(Lists.newArrayList(MediaType.APPLICATION_JSON_UTF8));
-        // request = new HttpEntity<>(null, headers);
+    public ResponseEntity doPost(String url, Object params, Class responseType) {
+        String json = JsonUtil.toJsonString(params);
+        return exchange(HttpMethod.POST, url, json, null, responseType);
     }
-
 
     public String doPost(String url, Map<String, ?> params) {
-        return doPost(url, params, null);
+        String json = JsonUtil.toJsonString(params);
+        return exchange(HttpMethod.POST, url, json, null);
     }
 
-    public String doGet(String url, Map<String, ?> params) {
+    public String doGet(String url) {
+        return doGet(url, null);
+    }
+
+    public String doGet(String url, Object params) {
         return doGet(url, params, null);
     }
 
-    public String doPost(String url, Map<String, ?> params, Map<String, String> headers) {
-        ResponseEntity<String> rss = exchange(url, HttpMethod.POST, params, headers);
-        return rss.getBody();
+    public String doGet(String url, Object params, HttpHeaders headers) {
+        return exchange(HttpMethod.GET, url, params, headers);
     }
 
-    public String doGet(String url, Map<String, ?> params, Map<String, String> headers) {
-        ResponseEntity<String> rss = exchange(url, HttpMethod.GET, params, headers);
-        return rss.getBody();
-    }
-
-    private ResponseEntity<String> exchange(HttpServletRequest request, HttpMethod method, String url, Map<String, ?> params) {
-        //获取header信息
-        HttpHeaders httpHeaders = new HttpHeaders();
-        Enumeration<String> headerNames = request.getHeaderNames();
-        while (headerNames.hasMoreElements()) {
-            String key = (String) headerNames.nextElement();
-            String value = request.getHeader(key);
-            httpHeaders.add(key, value);
-        }
-        //获取parameter信息
-        if (params == null) {
-            params = request.getParameterMap();
+    private String exchange(HttpMethod method, String url, Object params, HttpHeaders headers) {
+        ResponseEntity<String> entity = exchange(method, url, params, headers, String.class);
+        if (entity != null) {
+            log.info("<== ret:{}", entity.getBody());
+            return entity.getBody();
         }
 
-        HttpEntity<String> requestEntity = new HttpEntity<>(null, httpHeaders);
-        return restTemplate.exchange(url, method, requestEntity, String.class, params);
+        return "";
     }
 
-    private ResponseEntity<String> exchange(String url, HttpMethod method, Map<String, ?> params, Map<String, String> headers) {
-
-        //获取header信息
-        HttpHeaders httpHeaders = new HttpHeaders();
-        if (MapUtils.isNotEmpty(headers)) {
-            headers.forEach((k, v) -> httpHeaders.add(k, v));
+    private ResponseEntity exchange(HttpMethod method, String url, Object params, HttpHeaders headers, Class responseType) {
+        if (headers == null) {
+            headers = new HttpHeaders();
         }
 
-        HttpEntity<String> requestEntity = new HttpEntity<>(null, httpHeaders);
-        ResponseEntity<String> rss = restTemplate.exchange(url, method, requestEntity, String.class, params);
-        return rss;
+        HttpEntity request = new HttpEntity<>(headers);
+        if (method.equals(HttpMethod.GET)) {
+            url = getUrl(url, params);
+        }
+
+        if (method.equals(HttpMethod.POST)) {
+            request = new HttpEntity<>(params, headers);
+        }
+
+        log.info("==> url:{} params:{} header:{}", url, params, headers);
+
+        TimeInterval time = new TimeInterval();
+        time.start();
+
+        ResponseEntity<String> entity = null;
+
+        try {
+            entity = restTemplate.exchange(url, method, request, responseType);
+        } catch (RestClientException e) {
+            log.error("", e);
+        }
+
+        log.info("<== time:{}ms, code:{}", time.intervalMs(), entity.getStatusCode());
+
+        return entity;
     }
 
-    private static URI getUrl(String url, Object params) {
+    private static String getUrl(String url, Object params) {
+        Map<String, String> map = BeanUtil.toStringMap(params);
+
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(url);
+        if (!CollectionUtils.isEmpty(map)) {
+            map.forEach((key, value) -> builder.queryParam(key, value));
+        }
 
-        Map<String, Object> map = BeanUtil.toMap(params);
-        map.forEach((key, value) -> builder.queryParam(key, value));
-
-        return builder.build().encode().toUri();
+        return builder.build().encode().toUri().toString();
     }
-
 
 
     // public static String getForObject(String url) {
@@ -119,48 +124,11 @@ public class RestTemplateUtil {
     }*/
 
 
-    public static String postForObject(String url, Object params) {
-        // String ret = "";
-        // try {
-        //     MultiValueMap<String, String> body = BeanUtil.toMultiValueMap(params);
-        //     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-        //     ret = restTemplate.postForObject(url, request, String.class);
-        //
-        //     // ret = restTemplate.postForObject(getUrl(url, params), request, String.class);
-        // } catch (RestClientException e) {
-        //     log.desc("http post desc, url:{}, params:{}", url, params, e);
-        // }
-        //
-        // return ret;
-
-        MultiValueMap<String, String> body = BeanUtil.toMultiValueMap(params);
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
-        return restTemplate.postForObject(url, request, String.class);
-    }
-
-    public static String getForObject(String url, Object params) {
-        // String ret = "";
-        // try {
-        //     ret = restTemplate.getForObject(getUrl(url, params), String.class);
-        // } catch (RestClientException e) {
-        //     log.desc("http getString desc, url{}, params{}", url, params, e);
-        // }
-        //
-        // return ret;
-        return restTemplate.getForObject(getUrl(url, params), String.class);
-    }
-
-    public static String getForObject(String url) {
-        // String ret = "";
-        // try {
-        //     ret = restTemplate.getForObject(url, String.class);
-        // } catch (RestClientException e) {
-        //     log.desc("http getString desc, url {}", url, e);
-        // }
-        //
-        // return ret;
-        return restTemplate.getForObject(url, String.class);
-    }
+    // public  String postForObject(String url, Object params) {
+    //     MultiValueMap<String, String> body = BeanUtil.toMultiValueMap(params);
+    //     HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(body, headers);
+    //     return restTemplate.postForObject(url, request, String.class);
+    // }
 
   /*  private static HttpEntity request() {
         HttpHeaders headers = new HttpHeaders();

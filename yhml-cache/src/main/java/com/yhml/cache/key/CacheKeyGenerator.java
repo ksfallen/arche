@@ -6,24 +6,29 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.reflect.MethodSignature;
 
 import com.yhml.cache.annotaton.LocalCache;
+import com.yhml.cache.annotaton.RedisCache;
 
 /**
  * @author: Jfeng
  * @date: 2019-07-16
  */
-public class LocalKeyGenerator extends AbstractKeyGenerator {
+public class CacheKeyGenerator extends AbstractKeyGenerator {
 
-    @Override
     public String getKey(ProceedingJoinPoint pjp) {
-        String clazzName = pjp.getTarget().getClass().getSimpleName();
         Method method = ((MethodSignature) pjp.getSignature()).getMethod();
 
-        LocalCache localCache = method.getAnnotation(LocalCache.class);
+        RedisCache rc = method.getAnnotation(RedisCache.class);
 
-        if (localCache == null) {
-            return null;
+        if (rc != null) {
+            return getKey(method, pjp.getArgs(), rc.prefix(), rc.keys(), rc.delimiter());
         }
 
-        return getKey(method, pjp.getArgs(), localCache.prefix(), localCache.keys(), localCache.delimiter());
+        LocalCache lc = method.getAnnotation(LocalCache.class);
+
+        if (lc != null) {
+            return getKey(method, pjp.getArgs(), lc.prefix(), lc.keys(), lc.delimiter());
+        }
+
+        return null;
     }
 }

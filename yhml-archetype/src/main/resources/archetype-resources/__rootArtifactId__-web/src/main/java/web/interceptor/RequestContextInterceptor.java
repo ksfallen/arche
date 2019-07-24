@@ -1,12 +1,12 @@
+#set($symbol_pound='#')
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
+package ${package}.web.interceptor;
+
 import org.springframework.web.servlet.HandlerInterceptor;
 import org.springframework.web.servlet.ModelAndView;
 
 import lombok.extern.slf4j.Slf4j;
-
-#set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' ) package ${package}.web.interceptor;
-
 
 @Slf4j
 public class RequestContextInterceptor implements HandlerInterceptor {

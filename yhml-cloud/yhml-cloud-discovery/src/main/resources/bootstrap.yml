@@ -1,0 +1,15 @@
+#关闭 endpoints 401
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+#  security:
+#    enabled: false
+
+endpoints:
+  zookeeper:
+    enabled: true
+
+
+

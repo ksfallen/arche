@@ -1,0 +1,6 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.yhml.cloud.register.DiscoveryRegisterConfiguration,\
+  com.yhml.cloud.feign.FeignOkHttpConfig
+
+#org.springframework.context.ApplicationListener=\
+#  com.yhml.cloud.config.listener.ApplicationReadyListener

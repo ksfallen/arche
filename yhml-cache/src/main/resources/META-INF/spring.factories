@@ -1,1 +1,2 @@
-org.springframework.boot.autoconfigure.EnableAutoConfiguration=com.yhml.lock.autoconfigure.LockAutoConfiguration
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+  com.yhml.cache.CachAutoConfiguration

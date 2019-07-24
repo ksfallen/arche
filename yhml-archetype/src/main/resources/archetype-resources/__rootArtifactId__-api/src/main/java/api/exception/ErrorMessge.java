@@ -1,7 +1,7 @@
 #set($symbol_pound='#')
 #set($symbol_dollar='$')
 #set($symbol_escape='\' )
-package ${package}.biz.exception;
+package ${package}.api.exception;
 
 import org.apache.commons.lang3.StringUtils;
 

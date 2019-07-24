@@ -15,74 +15,81 @@
 
 
     <properties>
-        <project.version>1.0.0</project.version>
-        <mybatis-plus.version>3.1.1</mybatis-plus.version>
-        <velocity.version>2.1</velocity.version>
-        <io.swagger.version>1.5.10</io.swagger.version>
-
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <${artifactId}.version>1.0.0</${artifactId}.version>
     </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.yhml</groupId>
+            <artifactId>yhml-core</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-api</artifactId>
-                <version>${version}</version>
+                <version>${${artifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-core</artifactId>
-                <version>${version}</version>
+                <version>${${artifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-biz</artifactId>
-                <version>${version}</version>
+                <version>${${artifactId}.version}</version>
             </dependency>
             <dependency>
                 <groupId>${groupId}</groupId>
                 <artifactId>${rootArtifactId}-web</artifactId>
-                <version>${version}</version>
-            </dependency>
-
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-boot-starter</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.baomidou</groupId>
-                <artifactId>mybatis-plus-generator</artifactId>
-                <version>${mybatis-plus.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.velocity</groupId>
-                <artifactId>velocity-engine-core</artifactId>
-                <version>${velocity.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.swagger</groupId>
-                <artifactId>swagger-annotations</artifactId>
-                <version>${io.swagger.version}</version>
+                <version>${${artifactId}.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <build>
         <plugins>
+            <!-- 编译插件:指定编译环境(jre,coding) -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
             </plugin>
+            <!-- 测试插件:运行测试类;跳过失败的单元测试... -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <includes>
+                        <include>**/Test*.java</include>
+                    </includes>
+                    <testFailureIgnore>true</testFailureIgnore>
+                </configuration>
+            </plugin>
+
         </plugins>
     </build>
 </project>

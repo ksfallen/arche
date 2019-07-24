@@ -1,4 +1,4 @@
-package com.yhml.core.config.mvc.interceptor;
+package com.yhml.cache.interceptor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -16,9 +16,8 @@ import lombok.extern.slf4j.Slf4j;
  * Date: 2017/3/7
  */
 @Slf4j
-public class LoggerInterceptor extends HandlerInterceptorAdapter {
+public class TokenInterceptor extends HandlerInterceptorAdapter {
 
-    public static final String RESPONSE_FOR_LOGGER = "response_for_logger";
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -33,15 +32,6 @@ public class LoggerInterceptor extends HandlerInterceptorAdapter {
         }
 
         return true;
-    }
-
-    @Override
-    public void afterCompletion(HttpServletRequest request, HttpServletResponse response, Object handler, Exception ex) {
-        if (request.getRequestURI() != null && handler instanceof HandlerMethod) {
-            Object result = request.getAttribute(RESPONSE_FOR_LOGGER);
-            request.removeAttribute(RESPONSE_FOR_LOGGER);
-            log.info("resp -> url:{}, result:{}", request.getRequestURI(), result);
-        }
     }
 
 }

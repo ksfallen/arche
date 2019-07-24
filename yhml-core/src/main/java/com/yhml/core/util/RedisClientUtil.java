@@ -21,7 +21,7 @@ public class RedisClientUtil {
     private static final long exprie_time = 60 * 60 * 24;
 
     @Setter
-    private static RedissonClient redissonClient;
+    private RedissonClient redissonClient;
 
     /**
      * 写入/覆盖。如果key已经在redis上存在，那么会被覆盖。
@@ -30,11 +30,11 @@ public class RedisClientUtil {
      * @param value 值。 注意不能超过1G
      * @return
      */
-    public static boolean set(String key, String value) {
+    public boolean set(String key, String value) {
         return set(key, value, exprie_time);
     }
 
-    public static Long incr(String key) {
+    public Long incr(String key) {
         return redissonClient.getAtomicLong(key).incrementAndGet();
     }
 
@@ -47,7 +47,7 @@ public class RedisClientUtil {
      * @param seconds 存活时间（秒）
      * @return
      */
-    public static boolean set(String key, String value, long seconds) {
+    public boolean set(String key, String value, long seconds) {
         try {
             redissonClient.getBucket(key, StringCodec.INSTANCE).set(value, seconds, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -59,9 +59,10 @@ public class RedisClientUtil {
 
     /**
      * 批量set key和vaue 对
+     *
      * @param kv
      */
-    public static void mset(String... kv) {
+    public void mset(String... kv) {
         if (kv == null || kv.length % 2 != 0) {
             throw new IllegalArgumentException("key,value... " + Arrays.toString(kv));
         }
@@ -71,10 +72,10 @@ public class RedisClientUtil {
             map.put(kv[i++], kv[i++]);
         }
 
-       mset(map);
+        mset(map);
     }
 
-    public static void mset(Map<String, String> map) {
+    public void mset(Map<String, String> map) {
         try {
             redissonClient.getBuckets(StringCodec.INSTANCE).set(map);
         } catch (Exception e) {
@@ -93,7 +94,7 @@ public class RedisClientUtil {
      * @param value
      * @return
      */
-    public static boolean setnx(String key, String value) {
+    public boolean setnx(String key, String value) {
         return setnx(key, value, exprie_time);
     }
 
@@ -108,7 +109,7 @@ public class RedisClientUtil {
      * @param seconds 存活时间（秒）
      * @return
      */
-    public static boolean setnx(String key, String value, long seconds) {
+    public boolean setnx(String key, String value, long seconds) {
         try {
             // NX:只在键不存在时，才对键进行设置操作;
             redissonClient.getBucket(key, StringCodec.INSTANCE).trySet(value, seconds, TimeUnit.SECONDS);
@@ -126,7 +127,7 @@ public class RedisClientUtil {
      * @param key
      * @return
      */
-    public static long del(String... keys) {
+    public long del(String... keys) {
         try {
             return redissonClient.getKeys().delete(keys);
         } catch (Exception e) {
@@ -138,15 +139,16 @@ public class RedisClientUtil {
 
     /**
      * 匹配删除 keys
+     *
      * @param pattern
      * @return
      */
-    public static long delByPattern(String pattern) {
+    public long delByPattern(String pattern) {
         try {
             RKeys rKeys = redissonClient.getKeys();
             return rKeys.deleteByPattern(pattern);
         } catch (Exception e) {
-            log.error("delByPattern error, k={}",pattern, e);
+            log.error("delByPattern error, k={}", pattern, e);
         }
         return 0;
     }
@@ -154,7 +156,7 @@ public class RedisClientUtil {
     /**
      * 读取
      */
-    public static String get(String key) {
+    public String get(String key) {
         try {
             RBucket<String> bucket = redissonClient.getBucket(key, StringCodec.INSTANCE);
             return bucket.get();
@@ -168,7 +170,7 @@ public class RedisClientUtil {
     /**
      * 增加到set集合
      */
-    public static void zadd(String key, Double score, String value) {
+    public void zadd(String key, Double score, String value) {
         try {
             RScoredSortedSet<String> set = redissonClient.getScoredSortedSet(key, StringCodec.INSTANCE);
             set.add(score, value);
@@ -185,7 +187,7 @@ public class RedisClientUtil {
      * @param value
      * @author HuJianfeng
      */
-    public static void sadd(String key, String... members) {
+    public void sadd(String key, String... members) {
 
     }
 
@@ -196,7 +198,7 @@ public class RedisClientUtil {
      * @param value
      * @author HuJianfeng
      */
-    public static Set<String> smembers(String key) {
+    public Set<String> smembers(String key) {
         return null;
     }
 
@@ -207,7 +209,7 @@ public class RedisClientUtil {
      * @return
      * @author HuJianfeng
      */
-    public static String spop(String key) {
+    public String spop(String key) {
         return null;
     }
 
@@ -218,8 +220,8 @@ public class RedisClientUtil {
      * @return
      * @author HuJianfeng
      */
-    public static int zcard(String key) {
-       return 0;
+    public int zcard(String key) {
+        return 0;
     }
 
     /**
@@ -233,7 +235,7 @@ public class RedisClientUtil {
      * @return
      * @author HuJianfeng
      */
-    public static Set<String> zrange(String key, long start, long end) {
+    public Set<String> zrange(String key, long start, long end) {
         return null;
     }
 
@@ -247,14 +249,14 @@ public class RedisClientUtil {
      * @return
      * @author HuJianfeng
      */
-    public static Set<String> zrangeByScore(String key, double mix, double max) {
+    public Set<String> zrangeByScore(String key, double mix, double max) {
         return null;
     }
 
     /**
      * 从集合中删除
      */
-    public static void zrem(String key, String... value) {
+    public void zrem(String key, String... value) {
 
     }
 
@@ -265,7 +267,7 @@ public class RedisClientUtil {
      * @param value
      * @return
      */
-    public static Double zscore(String key, String value) {
+    public Double zscore(String key, String value) {
         // Double score = null;
         // Pool<Jedis> pool = RedisClientUtil.getJedisPool();
         // if (pool == null) {
@@ -292,7 +294,7 @@ public class RedisClientUtil {
      * @param max
      * @return
      */
-    public static int zcount(String key, double min, double max) {
+    public int zcount(String key, double min, double max) {
         // Long count = 0L;
         // Pool<Jedis> pool = RedisClientUtil.getJedisPool();
         // if (pool == null) {
@@ -315,11 +317,11 @@ public class RedisClientUtil {
      * @param key 查询条件[eg: config.core.* ]
      * @return
      */
-    public static Set<String> keys(String key) {
+    public Set<String> keys(String key) {
         return null;
     }
 
-    public static Long rpush(String key, String... values) {
+    public Long rpush(String key, String... values) {
         // Pool<Jedis> pool = getJedisPool();
         // if (pool == null) {
         //     return null;
@@ -334,7 +336,7 @@ public class RedisClientUtil {
         return null;
     }
 
-    public static List<String> blpop(String... key) {
+    public List<String> blpop(String... key) {
         return blpop(0, key);
     }
 
@@ -347,7 +349,7 @@ public class RedisClientUtil {
      * @return
      * @author HuJianfeng
      */
-    public static List<String> blpop(int timeout, String... key) {
+    public List<String> blpop(int timeout, String... key) {
         return null;
     }
 

@@ -1,4 +1,4 @@
-package com.yhml.lock.aop;
+package com.yhml.cache.aop;
 
 import org.aopalliance.aop.Advice;
 import org.springframework.aop.Pointcut;
@@ -9,7 +9,7 @@ import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.util.Assert;
 
-import com.yhml.lock.annotation.LockAction;
+import com.yhml.cache.annotaton.Lock;
 
 import lombok.NonNull;
 
@@ -44,6 +44,6 @@ public class LockAnnotationAdvisor extends AbstractPointcutAdvisor implements Be
     }
 
     private Pointcut buildPointcut() {
-        return AnnotationMatchingPointcut.forMethodAnnotation(LockAction.class);
+        return AnnotationMatchingPointcut.forMethodAnnotation(Lock.class);
     }
 }

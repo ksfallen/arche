@@ -1,4 +1,4 @@
-package com.test.reflect;
+package com.reflect;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;

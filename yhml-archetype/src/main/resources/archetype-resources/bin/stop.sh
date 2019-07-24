@@ -1,5 +1,6 @@
 #!/bin/bash
-APP_NAME=saga-sys
+APP_NAME=yhml-sys
+
 PID=$(ps -ef | grep ${APP_NAME}.jar | grep -v grep | awk '{ print $2 }')
 if [ -z "$PID" ]
 then

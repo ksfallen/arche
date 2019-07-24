@@ -1,0 +1,30 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+package ${symbol_dollar}{package.ServiceImpl};
+
+import ${symbol_dollar}{package.Entity}.${symbol_dollar}{entity};
+import ${symbol_dollar}{package.Mapper}.${symbol_dollar}{table.mapperName};
+import ${symbol_dollar}{package.Service}.${symbol_dollar}{table.serviceName};
+import ${symbol_dollar}{superServiceImplClassPackage};
+
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+
+/**
+ *
+ * @author ${symbol_dollar}{author}
+ * @since ${symbol_dollar}{date}
+ */
+@Service
+#if(${symbol_dollar}{kotlin})
+open class ${symbol_dollar}{table.serviceImplName} : ${symbol_dollar}{superServiceImplClass}<${symbol_dollar}{table.mapperName}, ${symbol_dollar}{entity}>(), ${symbol_dollar}{table.serviceName} {
+
+}
+#else
+@Transactional(rollbackFor = Exception.class)
+public class ${symbol_dollar}{table.serviceImplName} extends ${symbol_dollar}{superServiceImplClass}<${symbol_dollar}{table.mapperName}, ${symbol_dollar}{entity}> implements ${symbol_dollar}{table.serviceName} {
+
+}
+#end

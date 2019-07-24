@@ -2,21 +2,40 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>yhml-cache</artifactId>
-    <version>0.0.1</version>
-    <packaging>jar</packaging>
-
     <parent>
         <groupId>com.yhml</groupId>
         <artifactId>yhml-base</artifactId>
-        <version>0.0.1</version>
+        <version>1.0.0</version>
     </parent>
+
+    <artifactId>yhml-cache</artifactId>
+    <packaging>jar</packaging>
 
     <dependencies>
         <dependency>
 	        <groupId>com.yhml</groupId>
 	        <artifactId>yhml-core</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
     </dependencies>
 </project>
 

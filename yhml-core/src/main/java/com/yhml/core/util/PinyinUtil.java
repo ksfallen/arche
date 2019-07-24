@@ -17,14 +17,13 @@ import net.sourceforge.pinyin4j.format.exception.BadHanyuPinyinOutputFormatCombi
 public class PinyinUtil {
 
     private static HanyuPinyinOutputFormat lower_format = new HanyuPinyinOutputFormat();
-    // private static HanyuPinyinOutputFormat upper_format = new HanyuPinyinOutputFormat();
+    private static HanyuPinyinOutputFormat upper_format = new HanyuPinyinOutputFormat();
 
     static {
         lower_format.setCaseType(HanyuPinyinCaseType.LOWERCASE);       // 输出拼音全部小写
         lower_format.setToneType(HanyuPinyinToneType.WITHOUT_TONE);    // 不带声调
-
-        // upper_format.setCaseType(HanyuPinyinCaseType.UPPERCASE);    // 输出拼音全部大写
-        // upper_format.setToneType(HanyuPinyinToneType.WITHOUT_TONE); // 不带声调
+        upper_format.setCaseType(HanyuPinyinCaseType.UPPERCASE);    // 输出拼音全部大写
+        upper_format.setToneType(HanyuPinyinToneType.WITHOUT_TONE); // 不带声调
     }
 
 
@@ -130,7 +129,6 @@ public class PinyinUtil {
 
         return result;
     }
-
     /**
      * 取首字母
      */

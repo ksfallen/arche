@@ -1,6 +1,5 @@
 package com.yhml.core.util;
 
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -9,8 +8,11 @@ import org.apache.commons.lang3.math.NumberUtils;
 
 import com.google.common.collect.Lists;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.util.ReUtil;
+
 /**
- * 身份证号码,可以解析身份证号码的各个字段，以及验证身份证号码是否有效
+ *
  * 身份证号码构成：6位地址编码+8位生日+3位顺序码+1位校验码
  *
  * @author: Jfeng
@@ -18,19 +20,23 @@ import com.google.common.collect.Lists;
  */
 public class IDCard {
     /**
+     * 省、直辖市代码表
+     */
+    public static final List<String> areaCodes = Lists.newArrayList("11", "12", "13", "14", "15", "21", "22", "23", "31", "32", "33", "34"
+            , "35", "36", "37", "41", "42", "43", "44", "45", "46", "50", "51", "52", "53", "54", "61", "62", "63", "64", "65", "71", "81"
+            , "82", "91");
+    /**
      * 身份证的最小出生日期,1900年1月1日
      */
-    private final static Date MINIMAL_BIRTH_DATE = new Date(-2209017600000L);
+    private final static Date MINIMAL_BIRTH_DATE = DateUtils.parseDate("1900-01-01");
     /**
      * 18位长
      */
     private final static int ID_CARD_LENGTH_18 = 18;
-
     /**
      * 15位长
      */
     private final static int ID_CARD_LENGTH_15 = 15;
-
     /**
      * 18位身份证中最后一位校验码
      */
@@ -39,19 +45,6 @@ public class IDCard {
      * 18位身份证中，各个数字的生成校验码时的权值
      */
     private final static int[] VERIFY_CODE_WEIGHT = {7, 9, 10, 5, 8, 4, 2, 1, 6, 3, 7, 9, 10, 5, 8, 4, 2};
-
-    /**
-     * 省、直辖市代码表
-     */
-    public static final List<String> areaCodes = Lists.newArrayList(
-            "11", "12", "13", "14", "15", "21", "22", "23", "31", "32",
-            "33", "34", "35", "36", "37", "41", "42", "43", "44", "45",
-            "46","50", "51", "52", "53", "54", "61", "62", "63", "64",
-            "65", "71", "81", "82", "91");
-
-    // 身份证号码中的出生日期的格式
-    private static SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
-
     /**
      * 完整的身份证号码
      */
@@ -69,7 +62,7 @@ public class IDCard {
      * 如果是15位身份证号码，则自动转换为18位
      */
     public IDCard(String idcard) {
-        Objects.requireNonNull(idcard);
+        Objects.requireNonNull(idcard, "id card must not null");
 
         idcard = idcard.trim();
 
@@ -105,53 +98,11 @@ public class IDCard {
      */
     public static String convert15to18(String oldIdCard) {
         StringBuilder buf = new StringBuilder(ID_CARD_LENGTH_18);
-        buf.append(oldIdCard.substring(0, 6));
+        buf.append(oldIdCard, 0, 6);
         buf.append("19");
         buf.append(oldIdCard.substring(6));
         buf.append(IDCard.checkSum(buf));
         return buf.toString();
-    }
-
-    public boolean validate() {
-        if (validateResult != null) {
-            return this.validateResult;
-        }
-
-        return validate18(this.idcard);
-    }
-
-    public String getIdcard() {
-        return idcard;
-    }
-
-    public String getAreaCode() {
-        return this.idcard.substring(0, 6);
-    }
-
-    public String getBirthDay() {
-        return this.idcard.substring(6, 14);
-    }
-
-    /**
-     * 获取身份证的第17位，奇数为男性，偶数为女性
-     */
-    public int getGenderCode() {
-        char genderCode = this.idcard.charAt(ID_CARD_LENGTH_18 - 2);
-        return (((int) (genderCode - '0')) & 0x1);
-    }
-
-    public Date getBirthDate() {
-        if (this.birthDate != null) {
-            return birthDate;
-        }
-
-        try {
-            this.birthDate = dateFormat.parse(this.getBirthDay());
-        } catch (Exception e) {
-            throw new RuntimeException("身份证的出生日期无效");
-        }
-
-        return birthDate;
     }
 
     /**
@@ -189,35 +140,39 @@ public class IDCard {
     /**
      * 出生日期不能晚于当前时间，并且不能早于1900年
      * 出生日期中的年、月、日必须正确,比如月份范围是[1,12],日期范围是[1,31]，还需要校验闰年、大月、小月
-     * // validateBirthDay
      */
     private static boolean validateBirthDay(String idcard) {
-        return true;
+        if (StringUtil.isBlank(idcard)) {
+            return false;
+        }
+
+        String substring = idcard.substring(6, 14);
+        Date date = DateUtils.parseText(substring, DatePattern.PURE_DATE_PATTERN);
+        return DateUtils.isIdDate(substring) && MINIMAL_BIRTH_DATE.before(date);
     }
+
 
     /**
      * 验证10位
      */
     public static boolean validate10(String idcard) {
-        String[] info = new String[3];
-
         if (idcard == null) {
             return false;
         }
 
-        String card = idcard.replaceAll("[\\(|\\)]", "");
+        String card = idcard.replaceAll("[(|)]", "");
 
         if (card.length() != 8 && card.length() != 9 && idcard.length() != 10) {
             return false;
         }
 
         // 台湾
-        if (idcard.matches("^[a-zA-Z][0-9]{9}$")) {
+        if (ReUtil.isMatch(idcard, "^[a-zA-Z][0-9]{9}$")) {
             return validateTW(idcard);
         }
 
         // 澳门
-        if (idcard.matches("^[1|5|7][0-9]{6}\\(?[0-9A-Z]\\)?$")) {
+        if ("^[1|5|7][0-9]{6}\\(?[0-9A-Z]\\)?$".matches(idcard)) {
             return validateMacao(idcard);
         }
 
@@ -233,12 +188,49 @@ public class IDCard {
         return true;
     }
 
-
     private static boolean validateHK(String idcard) {
         return true;
     }
 
     private static boolean validateTW(String idcard) {
         return true;
+    }
+
+    public boolean validate() {
+        if (validateResult != null) {
+            return this.validateResult;
+        }
+
+        return validate18(this.idcard);
+    }
+
+    public String getIdcard() {
+        return idcard;
+    }
+
+    public String getAreaCode() {
+        return this.idcard.substring(0, 6);
+    }
+
+    public String getBirthDay() {
+        return this.idcard.substring(6, 14);
+    }
+
+    /**
+     * 获取身份证的第17位，奇数为男性，偶数为女性
+     */
+    public int getGenderCode() {
+        char genderCode = this.idcard.charAt(ID_CARD_LENGTH_18 - 2);
+        return (((int) (genderCode - '0')) & 0x1);
+    }
+
+    public Date getBirthDate() {
+        if (this.birthDate != null) {
+            return birthDate;
+        }
+
+        // yyyyMMdd
+        this.birthDate = DateUtils.parse(this.getBirthDay(), DatePattern.PURE_DATE_PATTERN);
+        return birthDate;
     }
 }

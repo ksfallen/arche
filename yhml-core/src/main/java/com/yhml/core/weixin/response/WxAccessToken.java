@@ -1,6 +1,4 @@
-package com.yhml.core.weixin.dto;
-
-import java.util.Date;
+package com.yhml.core.weixin.response;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -14,5 +12,4 @@ import lombok.EqualsAndHashCode;
 public class WxAccessToken extends WxResp {
     private String access_token;
     private Long expires_in;
-    private Date createTime = new Date();
 }

@@ -1,4 +1,4 @@
-package com.yhml.lock;
+package com.yhml.cache.lock;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

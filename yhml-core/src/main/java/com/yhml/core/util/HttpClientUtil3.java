@@ -106,7 +106,7 @@
 //         // util.cookieStore = new BasicCookieStore();
 //         // httpBuilder.setDefaultCookieStore(util.cookieStore);
 //         util.httpBuilder = httpBuilder;
-//         util.httpclient = httpBuilder.build();
+//         util.httpclient = httpBuilder.createBuilder();
 //
 //         return util;
 //     }
@@ -135,7 +135,7 @@
 //                 if (!StringUtils.isEmpty(keyStore) && !StringUtils.isEmpty(keyPass)) {
 //                     loadClientCertificate(sslBuilder, keyStore, keyPass, storeType);
 //                 }
-//                 SSLContext sslContext = sslBuilder.build();
+//                 SSLContext sslContext = sslBuilder.createBuilder();
 //
 //                 LayeredConnectionSocketFactory sslSF = new SSLConnectionSocketFactory(sslContext, protocols, null,
 //                         SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
@@ -143,7 +143,7 @@
 //             } catch (Exception e) {
 //                 log.error("信任服务器证书发生错误", e);
 //             }
-//             registry = registryBuilder.build();
+//             registry = registryBuilder.createBuilder();
 //             registryMap.put(keyStore, registry);
 //         }
 //         registryMap.notify();
@@ -165,7 +165,7 @@
 //         try (FileInputStream instream = new FileInputStream(new File(storeType))) {
 //             KeyStore keystore = KeyStore.getInstance(storeType);
 //             keystore.load(instream, keyPass.toCharArray());
-//             sslBuilder.loadKeyMaterial(keystore, keyPass.toCharArray()).build();
+//             sslBuilder.loadKeyMaterial(keystore, keyPass.toCharArray()).createBuilder();
 //         } catch (Exception e) {
 //             log.error("加载客户端证书发生错误", e);
 //         }
@@ -197,7 +197,7 @@
 //         source.setCharset(StandardCharsets.UTF_8);
 //
 //         if (MapUtils.isEmpty(params)) {
-//             return source.build();
+//             return source.createBuilder();
 //         }
 //         for (Entry<String, Object> entry : params.entrySet()) {
 //             String pname = entry.getKey();
@@ -228,7 +228,7 @@
 //             }
 //         }
 //
-//         return source.build();
+//         return source.createBuilder();
 //     }
 //
 //     /**
@@ -279,7 +279,7 @@
 //         source.setContentEncoding(StandardCharsets.UTF_8.name());
 //         source.setContentType(ContentType.APPLICATION_XML);
 //         source.setText(xml);
-//         return source.build();
+//         return source.createBuilder();
 //     }
 //
 //     /**
@@ -311,7 +311,7 @@
 //         EntityBuilder source = EntityBuilder.builder();
 //         source.setContentEncoding(StandardCharsets.UTF_8.name());
 //         source.setBinary(binary);
-//         return source.build();
+//         return source.createBuilder();
 //     }
 //
 //     /**
@@ -412,7 +412,7 @@
 //      */
 //     public void setProxyHost(String hostname, int port) {
 //         HttpHost host = new HttpHost(hostname, port);
-//         httpclient = httpBuilder.setProxy(host).build();
+//         httpclient = httpBuilder.setProxy(host).createBuilder();
 //     }
 //
 //     public void close() {

@@ -1,6 +1,9 @@
-package com.test;
+package com.yhml.core.util;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.ArrayList;
@@ -8,15 +11,10 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.assertj.core.util.Lists;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-import org.junit.Test;
-import org.springframework.util.FileSystemUtils;
+import javax.imageio.ImageIO;
 
-import com.yhml.core.util.StringUtil;
+import org.apache.commons.codec.binary.Base64;
+import org.springframework.util.FileSystemUtils;
 
 import lombok.Cleanup;
 import lombok.SneakyThrows;
@@ -34,70 +32,118 @@ public class ImageUtil {
     private static final String IMGURL_REG2 = "img[src~=(?i)\\.(png|jpe?g|gif)]";
     private static final String IMGSRC_REG = "[a-zA-z]+://[^\\s]*";
 
-    private static final String PATHNAME = "src/main/resources/res";
 
-    @Test
+    /**
+     * 删除图片
+     *
+     * @param path
+     */
+    public static void remove(String path) {
+        FileSystemUtils.deleteRecursively(new File(path));
+    }
+
+    /**
+     * 图片转换为二进制
+     *
+     * @param fileName
+     * @return
+     */
     @SneakyThrows
-    public void ssr() {
-        String url = "https://github.com/Alvin9999/new-pac/wiki/ss%E5%85%8D%E8%B4%B9%E8%B4%A6%E5%8F%B7";
+    public static String getImageBase64(String fileName) {
+        byte[] bytes = getImageBinary(fileName);
+        return Base64.encodeBase64String(bytes);
+        //return encoder.encodeBuffer(bytes).trim();
+    }
 
-        Document doc = Jsoup.connect(url).get();
-        Elements images = doc.select(IMGURL_REG2);
+    @SneakyThrows(value = IOException.class)
+    public static byte[] getImageBinary(String fileName) {
+        File file = new File(fileName);
 
-        String src = "";
-        for (Element image : images) {
-            src = image.attr("src");
-            log.info("src:{}", src);
-            if (src.contains("master")) {
-                break;
-            }
+        if (!file.exists() || file.isDirectory()) {
+            return new byte[0];
         }
 
-        download(src);
+        // 扩展名
+        String ext = fileName.substring(fileName.lastIndexOf(".") + 1);
+
+        BufferedImage bi = ImageIO.read(file);
+        @Cleanup ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ImageIO.write(bi, ext, baos);
+
+        byte[] bytes = baos.toByteArray();
+        return bytes;
+        //return encoder.encodeBuffer(bytes).trim();
     }
 
-    public void removeRes() {
-        File file = new File(PATHNAME);
-        FileSystemUtils.deleteRecursively(file);
+    /**
+     * 将二进制转换为图片
+     *
+     * @param base64String 图片二进制流
+     * @param fileName     文件名 全路径
+     * @param type     图片类型 jpg,png,gif
+     */
+    @SneakyThrows(value = IOException.class)
+    public static void saveImage(String base64String, String fileName, String type) {
+        byte[] bytes1 = Base64.decodeBase64(base64String);
+        ByteArrayInputStream bais = new ByteArrayInputStream(bytes1);
+        BufferedImage image = ImageIO.read(bais);
+
+        File w2 = new File(fileName);
+
+        ByteArrayOutputStream byteOutputStream = new ByteArrayOutputStream();
+        ImageIO.write(image, type, w2);
+
+        // RandomAccessFile file = new RandomAccessFile(fileName, "rw");
+        // file.write(bytes);
+        // file.close();
     }
 
-    public static void main(String[] args) throws Exception {
-        //获得html文本内容
-        // String  url = "http://g.co/fb/yypx2";
-        // String  url = "https://plus.google.com/photos/113684854375405108383/albums/6087831903821258689/6087831904726072418";
-        String url = "https://github.com/Alvin9999/new-pac/wiki/ss%E5%85%8D%E8%B4%B9%E8%B4%A6%E5%8F%B7";
+    public static void saveImage(String base64String, String fileName) {
+        saveImage(base64String, fileName, "jpg");
+    }
 
-        Document doc = Jsoup.connect(url).get();
+    /**
+     * 根据图片地址获得数据的字节流
+     *
+     * @param imageUrl 网络连接地址
+     * @return
+     */
+    public static byte[] getImageFromNetByUrl(String imageUrl) throws IOException {
+        URL url = new URL(imageUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setConnectTimeout(5 * 1000);
 
-        Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g|gif)]");
+        // 通过输入流获取图片数据
+        InputStream inStream = conn.getInputStream();
+        return readInputStream(inStream);
+    }
 
-        for (Element image : images) {
-            System.out.println("src : " + image.attr("src"));
+    /**
+     * 从输入流中获取数据
+     *
+     * @param inStream
+     * @return
+     * @throws IOException
+     */
+    private static byte[] readInputStream(InputStream inStream) throws IOException {
+        @Cleanup ByteArrayOutputStream outStream = new ByteArrayOutputStream();
+        byte[] buffer = new byte[10240];
+        int len = 0;
+        while ((len = inStream.read(buffer)) != -1) {
+            outStream.write(buffer, 0, len);
         }
-
-
-        System.out.println(doc.title());
-
-
-        // String HTML = getHtml(url);
-        // 获取图片标签
-        // List<String> imgUrl = getImageUrl(HTML);
-        // System.out.println(imgUrl);
-        // 获取图片src地址
-        // List<String> imgSrc = getImageSrc(imgUrl);
-        // System.out.println(imgSrc);
-        //下载图片
-        // download(imgSrc);
-
+        return outStream.toByteArray();
     }
+
 
     //获取HTML内容
-    private static String getHtml(String url) throws Exception {
+    public static String getHtml(String url) throws Exception {
         URL url1 = new URL(url);//使用java.net.URL
         URLConnection connection = url1.openConnection();//打开链接
-        InputStream in = connection.getInputStream();//获取输入流
-        InputStreamReader isr = new InputStreamReader(in);//流的包装
-        BufferedReader br = new BufferedReader(isr);
+        @Cleanup InputStream in = connection.getInputStream();//获取输入流
+        @Cleanup InputStreamReader isr = new InputStreamReader(in);//流的包装
+        @Cleanup BufferedReader br = new BufferedReader(isr);
 
         String line;
         StringBuilder sb = new StringBuilder();
@@ -105,14 +151,12 @@ public class ImageUtil {
             sb.append(line, 0, line.length());//添加到StringBuffer中
             sb.append('\n');//添加换行符
         }
+
         //关闭各种流，先声明的后关闭
-        br.close();
-        isr.close();
-        in.close();
         return sb.toString();
     }
 
-    private static List<String> getImageUrl(String html) {
+    public static List<String> getImageUrl(String html) {
         Matcher matcher = Pattern.compile(IMGURL_REG).matcher(html);
         List<String> listimgurl = new ArrayList<>();
         while (matcher.find()) {
@@ -122,7 +166,7 @@ public class ImageUtil {
     }
 
 
-    private static List<String> getImageSrc(List<String> listimageurl) {
+    public static List<String> getImageSrc(List<String> listimageurl) {
         List<String> listImageSrc = new ArrayList<>();
         for (String image : listimageurl) {
             Matcher matcher = Pattern.compile(IMGSRC_REG).matcher(image);
@@ -134,46 +178,58 @@ public class ImageUtil {
     }
 
 
-    private static void download(String src) {
-        download(Lists.newArrayList(src));
+    public static String download(String output, String url) {
+        String pathname = "";
+        try {
+            if (StringUtil.isBlank(url)) {
+                log.info("url is blank:" + url);
+                return pathname;
+            }
+
+            //开始时间
+            long t = System.currentTimeMillis();
+
+            log.info("开始下载:" + url);
+
+            String imageName = url.substring(url.lastIndexOf("/") + 1);
+            URL uri = new URL(url);
+
+            @Cleanup InputStream in = uri.openStream();
+
+            //文件输出流
+            pathname = output + File.separator + imageName;
+            @Cleanup FileOutputStream fo = new FileOutputStream(new File(pathname));
+
+            byte[] buf = new byte[1024];
+            int length = 0;
+
+
+            while ((length = in.read(buf, 0, buf.length)) != -1) {
+                fo.write(buf, 0, length);
+            }
+
+            //结束时间
+            log.info("imageName:{}, time:{}", pathname, System.currentTimeMillis() - t);
+
+        } catch (IOException ex) {
+            log.error("下载失败", ex);
+        }
+
+        return pathname;
     }
 
-    private static void download(List<String> listImgSrc) {
-        try {
-            //开始时间
-            long t1 = System.currentTimeMillis();
+    private static void download(String path, List<String> list) {
+        long t1 = System.currentTimeMillis();
 
-            for (String url : listImgSrc) {
-                if (StringUtil.isBlank(url)) {
-                    log.info("src is blank:" + url);
-                    continue;
-                }
+        list.forEach(e -> download(path, e));
 
-                //开始时间
-                String imageName = url.substring(url.lastIndexOf("/") + 1);
-                URL uri = new URL(url);
+        log.info("total time:{}", System.currentTimeMillis() - t1);
+    }
 
-                @Cleanup InputStream in = uri.openStream();
-
-                //文件输出流
-                @Cleanup FileOutputStream fo = new FileOutputStream(new File(PATHNAME + File.separator + imageName));
-
-                byte[] buf = new byte[1024];
-                int length = 0;
-
-                long t2 = System.currentTimeMillis();
-                log.info("开始下载:" + url);
-
-                while ((length = in.read(buf, 0, buf.length)) != -1) {
-                    fo.write(buf, 0, length);
-                }
-
-                //结束时间
-                log.info("imageName:{}, time:{}", imageName, System.currentTimeMillis() - t2);
-            }
-            log.info("total time:{}", System.currentTimeMillis() - t1);
-        } catch (Exception e) {
-            log.error("下载失败", e);
-        }
+    /**
+     * 用于读取图像文件并生成Image对象
+     */
+    public static Image getImageFromFile(String fileName) {
+       return Toolkit.getDefaultToolkit().getImage(fileName);
     }
 }

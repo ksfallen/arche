@@ -1,147 +1,150 @@
-package ${package.Entity};
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+package ${symbol_dollar}{package.Entity};
 
-#foreach($pkg in ${table.importPackages})
-import ${pkg};
+#foreach($pkg in ${symbol_dollar}{table.importPackages})
+import ${symbol_dollar}{pkg};
 #end
 
-#if(${swagger2})
+import com.baomidou.mybatisplus.annotation.*;
+
+#if(${symbol_dollar}{swagger2})
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;
 #end
+###if(${symbol_dollar}{versionFieldName})
+## import com.baomidou.mybatisplus.annotation.Version;
+###end
 
-#if(${versionFieldName})
-import com.baomidou.mybatisplus.annotation.Version;
+#if(${symbol_dollar}{entityLombokModel})
+import lombok.*;
+## import lombok.AllArgsConstructor;
+## import lombok.Builder;
+## import lombok.Data;
+## import lombok.NoArgsConstructor;
 #end
 
-#if(${entityLombokModel})
-import lombok.EqualsAndHashCode;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-#end
-
-#if(${entityLombokModel})
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+#if(${symbol_dollar}{entityLombokModel})
+## @Builder
+## @NoArgsConstructor
+## @AllArgsConstructor
 @Data
+#if(${symbol_dollar}{activeRecord})
 @EqualsAndHashCode(callSuper = true)
 #end
-#if(${table.convert})
-@TableName("${table.name}")
-#if(${swagger2})
-@ApiModel(value="${entity}")
+#end
+#if(${symbol_dollar}{table.convert})
+@TableName("${symbol_dollar}{table.name}")
+#if(${symbol_dollar}{swagger2})
+@ApiModel(value="${symbol_dollar}{entity}")
 #end
 #end
-#if(${superEntityClass})
-public class ${entity} extends ${superEntityClass}#if(${activeRecord})<${entity}>#end {
-#elseif(${activeRecord})
-public class ${entity} extends Model<${entity}> {
+#if(${symbol_dollar}{superEntityClass})
+public class ${symbol_dollar}{entity} extends ${symbol_dollar}{superEntityClass}#if(${symbol_dollar}{activeRecord})<${symbol_dollar}{entity}>#end {
+#elseif(${symbol_dollar}{activeRecord})
+public class ${symbol_dollar}{entity} extends Model<${symbol_dollar}{entity}> {
 #else
-public class ${entity} implements Serializable{
+public class ${symbol_dollar}{entity} implements Serializable {
 #end
 
-private static final long serialVersionUID=1L;
-
+    private static final long serialVersionUID = 1L;
 ## ----------  BEGIN 字段循环遍历  ----------
-#foreach($field in ${table.fields})
-    #if(${field.keyFlag})
-        #set($keyPropertyName=${field.propertyName})
+#foreach($field in ${symbol_dollar}{table.fields})
+    #if(${symbol_dollar}{field.keyFlag})
+        #set($keyPropertyName=${symbol_dollar}{field.propertyName})
     #end
 
-    #if("$!field.comment" != "")
-     /**
-      * ${field.comment}
+#if("$!field.comment" != "")
+    #if(${symbol_dollar}{swagger2})
+    @ApiModelProperty("${symbol_dollar}{field.comment}")
+    #else
+    /**
+     * ${symbol_dollar}{field.comment}
      */
-        #if(${swagger2})
-        @ApiModelProperty("${field.comment}")
-        #end
     #end
-
-    #if(${field.keyFlag})
-    ## 主键
-        #if(${field.keyIdentityFlag})
-        @TableId(value = "${field.name}", type = IdType.AUTO)
-        #elseif(!$null.isNull(${idType}) && "$!idType" != "")
-        @TableId(value = "${field.name}", type = IdType.${idType})
-        #elseif(${field.convert})
-        @TableId("${field.name}")
-        #end
-    ## 普通字段
-    #elseif(${field.fill})
-    ## -----   存在字段填充设置   -----
-        #if(${field.convert})
-        @TableField(value = "${field.name}", fill = FieldFill.${field.fill})
-        #else
-        @TableField(fill = FieldFill.${field.fill})
-        #end
-    #elseif(${field.convert})
-    @TableField("${field.name}")
+#end
+#if(${symbol_dollar}{field.keyFlag})
+## 主键
+    #if(${symbol_dollar}{field.keyIdentityFlag})
+    @TableId(value = "${symbol_dollar}{field.name}", type = IdType.AUTO)
+    #elseif(!$null.isNull(${symbol_dollar}{idType}) && "$!idType" != "")
+    @TableId(value = "${symbol_dollar}{field.name}", type = IdType.${symbol_dollar}{idType})
+    #elseif(${symbol_dollar}{field.convert})
+    @TableId("${symbol_dollar}{field.name}")
     #end
+## 普通字段
+#elseif(${symbol_dollar}{field.fill})
+## -----   存在字段填充设置   -----
+    #if(${symbol_dollar}{field.convert})
+    @TableField(value = "${symbol_dollar}{field.name}", fill = FieldFill.${symbol_dollar}{field.fill})
+    #else
+    @TableField(fill = FieldFill.${symbol_dollar}{field.fill})
+    #end
+#elseif(${symbol_dollar}{field.convert})
+    @TableField("${symbol_dollar}{field.name}")
+#end
 ## 乐观锁注解
-    #if(${versionFieldName}==${field.name})
+    #if(${symbol_dollar}{versionFieldName}==${symbol_dollar}{field.name})
     @Version
     #end
 ## 逻辑删除注解
-    #if(${logicDeleteFieldName}==${field.name})
+    #if(${symbol_dollar}{logicDeleteFieldName}==${symbol_dollar}{field.name})
     @TableLogic
     #end
-private ${field.propertyType} ${field.propertyName};
+    private ${symbol_dollar}{field.propertyType} ${symbol_dollar}{field.propertyName};
 #end
 ## ----------  END 字段循环遍历  ----------
-
-#if(!${entityLombokModel})
-    #foreach($field in ${table.fields})
-        #if(${field.propertyType.equals("boolean")})
+#if(!${symbol_dollar}{entityLombokModel})
+    #foreach($field in ${symbol_dollar}{table.fields})
+        #if(${symbol_dollar}{field.propertyType.equals("boolean")})
             #set($getprefix="is")
         #else
             #set($getprefix="get")
         #end
 
-    public ${field.propertyType} ${getprefix}${field.capitalName}(){
-            return ${field.propertyName};
-            }
+        public ${symbol_dollar}{field.propertyType} ${symbol_dollar}{getprefix}${symbol_dollar}{field.capitalName}(){
+            return ${symbol_dollar}{field.propertyName};
+        }
 
-        #if(${entityBuilderModel})
-        public ${entity} set${field.capitalName}(${field.propertyType} ${field.propertyName}){
+        #if(${symbol_dollar}{entityBuilderModel})
+        public ${symbol_dollar}{entity} set${symbol_dollar}{field.capitalName}(${symbol_dollar}{field.propertyType} ${symbol_dollar}{field.propertyName}){
         #else
-        public void set${field.capitalName}(${field.propertyType} ${field.propertyName}) {
+        public void set${symbol_dollar}{field.capitalName}(${symbol_dollar}{field.propertyType} ${symbol_dollar}{field.propertyName}) {
         #end
-            this.${field.propertyName} = ${field.propertyName};
-        #if(${entityBuilderModel})
+            this.${symbol_dollar}{field.propertyName} = ${symbol_dollar}{field.propertyName};
+        #if(${symbol_dollar}{entityBuilderModel})
                 return this;
         #end
             }
     #end
 #end
 
-#if(${entityColumnConstant})
-    #foreach($field in ${table.fields})
-    public static final String ${field.name.toUpperCase()} ="${field.name}";
+#if(${symbol_dollar}{entityColumnConstant})
+    #foreach($field in ${symbol_dollar}{table.fields})
+    public static final String ${symbol_dollar}{field.name.toUpperCase()} ="${symbol_dollar}{field.name}";
 
     #end
 #end
-#if(${activeRecord})
-@Override
-protected Serializable pkVal(){
-    #if(${keyPropertyName})
-            return this.${keyPropertyName};
+#if(${symbol_dollar}{activeRecord})
+    @Override
+    protected Serializable pkVal(){
+    #if(${symbol_dollar}{keyPropertyName})
+        return this.${symbol_dollar}{keyPropertyName};
     #else
-            return this.id;
+        return this.id;
     #end
-        }
-
+    }
 #end
-#if(!${entityLombokModel})
+#if(!${symbol_dollar}{entityLombokModel})
 @Override
 public String toString() {
-        return "${entity}{" +
-    #foreach($field in ${table.fields})
+    return "${symbol_dollar}{entity}{" +
+    #foreach($field in ${symbol_dollar}{table.fields})
         #if($!{velocityCount}==1)
-                "${field.propertyName}=" + ${field.propertyName} +
+                "${symbol_dollar}{field.propertyName}=" + ${symbol_dollar}{field.propertyName} +
         #else
-                ", ${field.propertyName}=" + ${field.propertyName} +
+                ", ${symbol_dollar}{field.propertyName}=" + ${symbol_dollar}{field.propertyName} +
         #end
     #end
         "}";

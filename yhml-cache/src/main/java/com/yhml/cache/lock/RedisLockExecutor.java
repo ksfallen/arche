@@ -1,4 +1,4 @@
-package com.yhml.lock;
+package com.yhml.cache.lock;
 
 import java.util.Collections;
 
@@ -37,13 +37,13 @@ public class RedisLockExecutor implements LockExecutor {
         return "OK".equals(lockResult);
     }
 
-    public boolean unLock(LockInfo lockInfo) {
+    public boolean unLock(String lockKey, String value) {
         Object releaseResult = redisTemplate.execute(
                 SCRIPT_UNLOCK,
                 redisTemplate.getStringSerializer(),
                 redisTemplate.getStringSerializer(),
-                Collections.singletonList(lockInfo.getLockKey()),
-                new Object[]{lockInfo.getLockValue()}
+                Collections.singletonList(lockKey),
+                new Object[]{value}
                 );
 
         return Boolean.valueOf(releaseResult.toString());

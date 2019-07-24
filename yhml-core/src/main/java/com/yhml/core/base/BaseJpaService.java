@@ -21,7 +21,7 @@
 // import com.querydsl.core.BooleanBuilder;
 // import com.querydsl.core.types.dsl.EntityPathBase;
 // import com.querydsl.jpa.impl.JPAQueryFactory;
-// import com.xinguangnet.tuchao.goodscenter.impl.repository.BaseRepository;
+// import com.yhml.tuchao.goodscenter.impl.repository.BaseRepository;
 //
 // import io.shardingjdbc.core.api.HintManager;
 // import io.shardingjdbc.core.hint.HintManagerHolder;

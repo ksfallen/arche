@@ -1,8 +1,8 @@
 #set( $symbol_pound = '#' )
 #set( $symbol_dollar = '$' )
 #set( $symbol_escape = '\' )
-package ${package}.api.feign;
+package ${package}.api.entity;
 
-public interface UserInfoApi {
+public class UserInfo {
 
 }

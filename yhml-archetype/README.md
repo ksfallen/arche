@@ -1,5 +1,14 @@
 # yhml-sys 脚手架
 
+## 使用
+mvn archetype:generate -B -DarchetypeCatalog=local -DarchetypeRepository=local \
+	-DarchetypeGroupId=com.yhml \
+	-DarchetypeArtifactId=yhml-archetype \
+	-DarchetypeVersion=1.SNAPSHOT \
+	-DgroupId=xxx \
+	-DartifactId=xxx \
+	-Dversion=1.0.0
+
 ## 工程结构
 
 - `api` 对外接口 dto 常量

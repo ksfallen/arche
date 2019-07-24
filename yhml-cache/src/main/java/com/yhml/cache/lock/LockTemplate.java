@@ -1,6 +1,7 @@
-package com.yhml.lock;
+package com.yhml.cache.lock;
 
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 import org.springframework.util.Assert;
 
@@ -14,18 +15,20 @@ import lombok.extern.slf4j.Slf4j;
 public class LockTemplate {
     private LockExecutor lockExecutor;
 
-    public LockInfo lock(String key, long expire, long timeout) throws Exception {
+    public LockInfo lock(String key, long expire, long timeout, TimeUnit timeUnit) throws Exception {
         Assert.isTrue(timeout > 0L, "tryTimeout must more than 0");
 
         long start = System.currentTimeMillis();
         int acquireCount = 0;
         String value = UUID.randomUUID().toString();
 
-        while(System.currentTimeMillis() - start < timeout) {
+        long millis = timeUnit.toMillis(timeout);
+
+        while(System.currentTimeMillis() - start < millis) {
             boolean result = this.lockExecutor.lock(key, value, expire);
             ++acquireCount;
             if (result) {
-                return new LockInfo(key, value, expire, timeout, acquireCount);
+                return new LockInfo(key, value, expire, millis, acquireCount);
             }
 
             Thread.sleep(50L);
@@ -36,7 +39,7 @@ public class LockTemplate {
     }
 
     public boolean unLock(LockInfo lockInfo) {
-        return this.lockExecutor.unLock(lockInfo);
+        return this.lockExecutor.unLock(lockInfo.getLockKey(), lockInfo.getLockValue());
     }
 
     public void setLockExecutor(LockExecutor lockExecutor) {

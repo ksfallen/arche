@@ -1,12 +1,10 @@
-import java.io.Serializable;
-
 #set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' ) package ${package}.web.context;
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
+package ${package}.web.context;
 
-public class SysContext implements Serializable {
-
-    private static ThreadLocal<Object> ctx = new ThreadLocal<Object>();
+public class SysContext {
+    private static ThreadLocal<Object> ctx = new ThreadLocal<>();
 
     public static Object get() {
         return  ctx.get();

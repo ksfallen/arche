@@ -1,4 +1,4 @@
-package com.citytsm.ace.account.core.utils;
+package com.yhml.core.util;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -6,29 +6,21 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.Resource;
-
-import org.springframework.dao.DataAccessException;
-import org.springframework.data.redis.connection.RedisConnection;
 import org.springframework.data.redis.connection.RedisConnectionCommands;
 import org.springframework.data.redis.connection.RedisServerCommands;
 import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Component;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.citytsm.basic.utils.json.JsonUtil;
-
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
  * Redis 工具类
  */
 @Slf4j
-@Component
-public class RedisUtil {
+public class RedisTempUtil {
 
-    @Resource(name = "redisTemplate")
+    @Setter
     private RedisTemplate<String, Object> redisTemplate;
 
     /**
@@ -37,18 +29,20 @@ public class RedisUtil {
      * @param key
      * @param value
      */
-    public void set(final String key, Object value) throws Exception {
-        try {
-            if (key == null || value == null) {
-                log.error("redis set, key or value is null");
-                return;
-            }
-            String jsonValue = JsonUtil.objToJson(value, SerializerFeature.WriteMapNullValue);
-            redisTemplate.opsForValue().set(key, jsonValue);
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw new Exception(e);
+    public boolean set(final String key, Object value) {
+        if (key == null || value == null) {
+            log.info("redis set, key or value is null");
+            return false;
         }
+
+        try {
+            redisTemplate.opsForValue().set(key, JsonUtil.toJsonString(value));
+            return true;
+        } catch (Exception e) {
+            log.error("", e);
+        }
+
+        return false;
     }
 
     /**
@@ -56,22 +50,22 @@ public class RedisUtil {
      *
      * @param key
      * @param value
-     * @param offset 过时时间，以秒为单位
+     * @param expire 过时时间，以秒为单位
      */
-    public void set(final String key, Object value, long offset) throws Exception {
-        try {
-            //log.debug("redis set, key:" + key + ",value:" + value == null ? "null" : JsonUtil.objToJson(value, SerializerFeature
-            // .WriteMapNullValue) + ",timeout:" + offset);
-            if (key == null || value == null) {
-                log.error("redis set, key or value is null");
-                return;
-            }
-            String jsonValue = JsonUtil.objToJson(value, SerializerFeature.WriteMapNullValue);
-            redisTemplate.opsForValue().set(key, jsonValue, offset, TimeUnit.SECONDS);
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw new Exception(e);
+    public boolean set(final String key, Object value, long expire) {
+        if (key == null || value == null) {
+            log.info("redis set, key or value is null");
+            return false;
         }
+
+        try {
+            redisTemplate.opsForValue().set(key, JsonUtil.toJsonString(value), expire, TimeUnit.SECONDS);
+            return true;
+        } catch (Exception e) {
+            log.error("", e);
+        }
+
+        return false;
     }
 
 
@@ -86,7 +80,7 @@ public class RedisUtil {
         try {
             log.debug("redis get, key:" + key + ",clazz:" + clazz.getName());
             Object val = redisTemplate.boundValueOps(key).get();
-            return val == null ? null : JsonUtil.jsonToBean(val.toString(), clazz);
+            return val == null ? null : JsonUtil.parseObject(val.toString(), clazz);
         } catch (Exception e) {
             log.error(e.toString());
             throw new Exception(e);
@@ -181,19 +175,20 @@ public class RedisUtil {
      *
      * @return
      */
-    public Object flushDB() throws Exception {
-        try {
-            return redisTemplate.execute(new RedisCallback() {
-                public String doInRedis(RedisConnection connection) throws DataAccessException {
-                    connection.flushDb();
-                    return "OK";
-                }
-            });
-        } catch (Exception e) {
-            log.error(e.toString());
-            throw new Exception(e);
-        }
-    }
+    // public boolean flushDB() {
+    //     try {
+    //         return redisTemplate.execute(new RedisCallback() {
+    //             @Override
+    //             public Object doInRedis(org.springframework.data.redis.connection.RedisConnection connection) throws
+    //             DataAccessException {
+    //                 connection.flushDb();
+    //                 return "OK";
+    //             }
+    //         });
+    //     } catch (Exception e) {
+    //         log.error("", e);
+    //     }
+    // }
 
     /**
      * @return

@@ -118,22 +118,7 @@ public class HttpClientUtil {
 
     public String httpGet(String url, Object object) {
         Map<String, String> param = BeanUtil.toStringMap(object);
-
-        // 设置参数
-        if (param != null && param.size() > 0) {
-            if (!url.contains("?")) {
-                url = url + "?";
-            }
-
-            StringBuilder sb = new StringBuilder();
-            for (String key : param.keySet()) {
-                sb.append(key);
-                sb.append("=");
-                sb.append(param.get(key));
-                sb.append("&");
-            }
-            url = url + sb.toString();
-        }
+        url = buildURL(url, object);
 
         try {
             HttpGet request = new HttpGet(url);
@@ -143,6 +128,29 @@ public class HttpClientUtil {
         }
 
         return null;
+    }
+
+    public static String buildURL(String url, Object object) {
+        Map<String, String> param = BeanUtil.toStringMap(object);
+
+        // 设置参数
+        if (!param.isEmpty()) {
+            if (!url.contains("?")) {
+                url = url + "?";
+            }
+
+            StringBuilder sb = new StringBuilder();
+            for (String key : param.keySet()) {
+                if (!url.endsWith("?")) {
+                    sb.append("&");
+                }
+                sb.append(key);
+                sb.append("=");
+                sb.append(param.get(key));
+            }
+            url = url + sb.toString();
+        }
+        return url;
     }
 
 

@@ -1,4 +1,4 @@
-package com.yhml.lock;
+package com.yhml.cache.lock;
 
 
 /**
@@ -8,5 +8,5 @@ package com.yhml.lock;
 public interface LockExecutor {
     boolean lock(String key, String value, long expire);
 
-    boolean unLock(LockInfo lockInfo);
+    boolean unLock(String key, String value);
 }

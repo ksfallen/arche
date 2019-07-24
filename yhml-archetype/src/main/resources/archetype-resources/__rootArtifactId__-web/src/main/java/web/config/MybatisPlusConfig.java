@@ -1,7 +1,7 @@
 #set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' )
-        package ${package}.web.config;
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
+package ${package}.web.config;
 
 import org.mybatis.spring.annotation.MapperScan;
 
@@ -18,7 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Configuration
 @MapperScan("${package}.core.mapper")
 @AutoConfigureAfter(DataSourceConfig.class)
-public class MybatisConfig {
+public class MybatisPlusConfig {
 
     /**
      * 分页插件

@@ -1,8 +1,9 @@
-import lombok.extern.slf4j.Slf4j;
-
 #set($symbol_pound='#')
         #set($symbol_dollar='$')
-        #set($symbol_escape='\' ) package ${package}.web.config;
+        #set($symbol_escape='\' )
+        package ${package}.web.config;
+
+import lombok.extern.slf4j.Slf4j;
 
 /**
  *  过滤器

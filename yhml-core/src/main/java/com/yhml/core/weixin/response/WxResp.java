@@ -1,4 +1,4 @@
-package com.yhml.core.weixin.dto;
+package com.yhml.core.weixin.response;
 
 import lombok.Data;
 
@@ -12,10 +12,10 @@ public class WxResp {
     private String errmsg;
 
     public static boolean success(WxResp resp) {
-        return resp != null && resp.getErrcode() == 0;
+        return resp == null || resp.getErrcode() == 0;
     }
 
     public static boolean error(WxResp resp) {
-        return resp == null || resp.getErrcode() != 0;
+        return !success(resp);
     }
 }

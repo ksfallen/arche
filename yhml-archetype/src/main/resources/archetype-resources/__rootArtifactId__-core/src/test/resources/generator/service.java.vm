@@ -1,9 +1,11 @@
-package ${package.ServiceImpl};
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+package ${symbol_dollar}{package.Service};
 
-import ${package.Entity}.${entity};
-import ${package.Mapper}.${table.mapperName};
- import ${superServiceImplClassPackage};
-## import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import ${symbol_dollar}{package.Entity}.${symbol_dollar}{entity};
+import ${symbol_dollar}{package.Mapper}.${symbol_dollar}{table.mapperName};
+import ${symbol_dollar}{superServiceImplClassPackage};
 import org.springframework.stereotype.Service;
 
 import lombok.extern.slf4j.Slf4j;
@@ -11,12 +13,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
-#if(${kotlin})
-open class ${table.serviceImplName} : ${superServiceImplClass}<${table.mapperName}, ${entity}>(), ${table.serviceName} {
+#if(${symbol_dollar}{kotlin})
+open class ${symbol_dollar}{table.serviceName} : ${symbol_dollar}{superServiceImplClass}<${symbol_dollar}{table.mapperName}, ${symbol_dollar}{entity}>(), ${symbol_dollar}{table.serviceName} {
 
 }
 #else
-public class ${table.serviceImplName} extends ${superServiceImplClass}<${table.mapperName}, ${entity}>{
+public class ${symbol_dollar}{table.serviceName} extends ${symbol_dollar}{superServiceImplClass}<${symbol_dollar}{table.mapperName}, ${symbol_dollar}{entity}>{
 
 }
 #end

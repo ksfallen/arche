@@ -1,55 +1,28 @@
 package com.yhml.core.util;
 
 import java.beans.PropertyDescriptor;
-import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.cglib.beans.BeanCopier;
 import org.springframework.cglib.beans.BeanMap;
+import org.springframework.cglib.core.Converter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import com.alibaba.fastjson.serializer.SerializerFeature;
-
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * User: Jfeng Date: 2017/3/14
- */
+
 @Slf4j
 public class BeanUtil extends BeanUtils {
 
-    /**
-     * map 转 bean
-     */
-    public static <T> T toBean(Map<String, ?> map, Class<T> clazz) {
-        // T bean = null;
-        // try {
-        //     bean = instantiateClass(clazz);
-        //     BeanMap.create(bean).putAll(map);
-        // } catch (BeansException e) {
-        //     log.error(e.getMessage());
-        //     return null;
-        // }
-        //
-        // return bean;
-        return copyWithJson(map, clazz);
-    }
-
-    /**
-     * 对象属性拷贝 忽略 src 中的 null 值
-     *
-     * @param src
-     * @param target
-     */
-    public static void copyPropertiesIgnoreNull(Object src, Object target) {
-        BeanUtils.copyProperties(src, target, getNullPropertyNames(src));
-    }
+    private static final ConcurrentHashMap<String, BeanCopier> cache = new ConcurrentHashMap<>();
 
     /**
      * 对象属性拷贝, 属性类别不同也可以 copy
@@ -61,7 +34,36 @@ public class BeanUtil extends BeanUtils {
             return bean;
         }
 
-        return copyWithJson(source, targetClass);
+        return copy(source, BeanUtils.instantiateClass(targetClass));
+    }
+
+    public static <T> T copy(Object source, T target) {
+        BeanCopier copier = buildCopier(source, target.getClass(), false);
+        copier.copy(source, target, null);
+        return target;
+    }
+
+    public static <T> T copy(Object source, T target, Converter converter) {
+        BeanCopier copier = buildCopier(source, target.getClass(), true);
+        copier.copy(source, target, converter);
+        return target;
+    }
+
+    /**
+     * 对象属性拷贝 忽略 src 中的 null 值
+     *
+     * @param target
+     */
+    public static <T> T copyPropertiesIgnoreNull(Object src, T target) {
+        BeanUtils.copyProperties(src, target, getNullPropertyNames(src));
+        return target;
+    }
+
+    /**
+     * map 转 bean
+     */
+    public static <T> T toBean(Map<String, ?> map, Class<T> clazz) {
+        return copyWithJson(map, clazz);
     }
 
 
@@ -192,6 +194,7 @@ public class BeanUtil extends BeanUtils {
 
     /**
      * 获取泛型的 class 类型
+     *
      * @param genType
      * @param index
      * @return
@@ -220,36 +223,6 @@ public class BeanUtil extends BeanUtils {
         return null;
     }
 
-    /**
-     * 打印类的基本类型
-     *
-     * @param clazz
-     * @return
-     */
-    public static <T> T instance(Class<T> clazz) throws IllegalAccessException, InstantiationException {
-        T instance = clazz.newInstance();
-        Field[] fields = clazz.getDeclaredFields();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            if (field.getType() == String.class) {
-                field.set(instance, "");
-            }
-            if (field.getType() == Integer.class) {
-                field.set(instance, 0);
-            }
-            if (field.getType() == Double.class) {
-                field.set(instance, 0.0);
-            }
-
-            System.out.println(field.getName() + ":" + field.get(instance));
-        }
-
-        String string = JsonUtil.toJsonString(instance, SerializerFeature.PrettyFormat);
-        System.out.println(string);
-
-        return instance;
-    }
-
     private static <T> T copyWithJson(Object source, Class<T> clazz) {
         String json = JsonUtil.toJsonString(source);
         return JsonUtil.parseObject(json, clazz);
@@ -269,5 +242,22 @@ public class BeanUtil extends BeanUtils {
         }
 
         return emptyNames.toArray(new String[0]);
+    }
+
+    private static <S, T> BeanCopier buildCopier(S source, Class<T> target, boolean useConverter) {
+        String baseKey = generateKey(source.getClass(), target);
+        BeanCopier copier;
+        if (!cache.containsKey(baseKey)) {
+            copier = BeanCopier.create(source.getClass(), target, useConverter);
+            cache.put(baseKey, copier);
+        } else {
+            copier = cache.get(baseKey);
+        }
+
+        return copier;
+    }
+
+    private static String generateKey(Class<?> class1, Class<?> class2) {
+        return class1.toString().trim() + "-" + class2.getSimpleName();
     }
 }

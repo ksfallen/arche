@@ -1,4 +1,4 @@
-package com.yhml.cache.autoconfigure;
+package com.yhml.cache;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.core.RedisTemplate;
 
+import com.yhml.cache.aop.LocalCacheAspect;
 import com.yhml.cache.aop.LockAnnotationAdvisor;
 import com.yhml.cache.aop.LockInterceptor;
 import com.yhml.cache.key.CacheKeyGenerator;
@@ -21,9 +22,15 @@ public class CachAutoConfiguration {
     public LockKeyGenerator lockKeyGenerator() {
         return new LockKeyGenerator();
     }
+
     @Bean
     public CacheKeyGenerator cacheKeyGenerator() {
         return new CacheKeyGenerator();
+    }
+
+    @Bean
+    public LocalCacheAspect localCacheAspect(CacheKeyGenerator cacheKeyGenerator) {
+        return new LocalCacheAspect();
     }
 
     @Bean

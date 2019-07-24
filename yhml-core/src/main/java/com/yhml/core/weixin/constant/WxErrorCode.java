@@ -1,4 +1,4 @@
-package com.yhml.core.wx.constant;
+package com.yhml.core.weixin.constant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

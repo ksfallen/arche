@@ -5,6 +5,8 @@ import java.util.regex.Matcher;
 
 import org.apache.commons.lang3.StringUtils;
 
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.StrUtil;
 import lombok.extern.slf4j.Slf4j;
 
 import static com.yhml.core.util.ValidateUtil.underline;
@@ -14,8 +16,13 @@ public class StringUtil extends StringUtils {
 
     public static final String DEFAULT_JOIN_SEPARATOR = ",";
 
-    public static String toString(Object obj, String nullStr) {
-        return obj == null ? nullStr : obj.toString();
+    public static void main(String[] args) {
+        String format = format("name:{}, value:{}", "a", "bak");
+        System.out.println(format);
+    }
+
+    public static String toString(Object obj, String defaultValue) {
+        return obj != null ? obj.toString() : defaultValue;
     }
 
     /**
@@ -52,22 +59,22 @@ public class StringUtil extends StringUtils {
         return builder.toString();
     }
 
-    public static boolean isUppercaseAlpha(char c) {
+    private static boolean isUppercaseAlpha(char c) {
         return (c >= 'A') && (c <= 'Z');
     }
 
-    public static boolean isLowercaseAlpha(char c) {
+    private static boolean isLowercaseAlpha(char c) {
         return (c >= 'a') && (c <= 'z');
     }
 
-    public static char toUpperAscii(char c) {
+    private static char toUpperAscii(char c) {
         if (isLowercaseAlpha(c)) {
             c -= (char) 0x20;
         }
         return c;
     }
 
-    public static char toLowerAscii(char c) {
+    private static char toLowerAscii(char c) {
         if (isUppercaseAlpha(c)) {
             c += (char) 0x20;
         }
@@ -103,11 +110,11 @@ public class StringUtil extends StringUtils {
      */
     public static String[] splitString(String str, int bytes) {
         int loopCount = (str.length() % bytes == 0) ? (str.length() / bytes) : (str.length() / bytes + 1);
-        String result[] = new String[loopCount];
+        String[] result = new String[loopCount];
 
         for (int i = 1; i <= loopCount; i++) {
             if (i == loopCount) {
-                result[i - 1] = str.substring((i - 1) * bytes, str.length());
+                result[i - 1] = str.substring((i - 1) * bytes);
             } else {
                 result[i - 1] = str.substring((i - 1) * bytes, (i * bytes));
             }
@@ -125,6 +132,48 @@ public class StringUtil extends StringUtils {
     public static boolean hasLength(String str) {
         return isNotEmpty(str);
     }
+
+    public static List<String> toList(String str) {
+        return toList(str, DEFAULT_JOIN_SEPARATOR);
+    }
+
+    public static List<String> toList(String str, String separator) {
+        String[] strArr = str.split(separator);
+        return CollectionUtil.toList(strArr);
+    }
+
+    public static List<String> toList(String ... str) {
+        return CollectionUtil.toList(str);
+    }
+
+    public static String join(Iterable<? extends CharSequence> elements) {
+        return join(DEFAULT_JOIN_SEPARATOR, elements);
+    }
+
+    public static String join(String separator, Iterable<? extends CharSequence> elements) {
+        if (elements == null) {
+            return "";
+        }
+
+        // @formatter:off
+        StringJoiner joiner = new StringJoiner(separator);
+        elements.forEach(c -> { if (isNotBlank(c)) joiner.add(c); });
+        // @formatter:on
+
+        return joiner.toString();
+    }
+
+    /**
+     * 字符串格式化
+     *
+     * @param messagePattern "key:{},value:{}"
+     * @param argArray       a,b
+     * @return key:a, value:b
+     */
+    public static String format(String messagePattern, Object... argArray) {
+        return StrUtil.format(messagePattern, argArray);
+    }
+
 
     /**
      * 统计线程堆栈
@@ -147,36 +196,6 @@ public class StringUtil extends StringUtils {
         }
 
         return sb.toString();
-    }
-
-    public static List<String> toList(String str) {
-        return toList(str, DEFAULT_JOIN_SEPARATOR);
-    }
-
-    public static List<String> toList(String str, String separator) {
-        List<String> list = new ArrayList<>();
-        String[] strArr = str.split(separator);
-        Collections.addAll(list, strArr);
-        return list;
-    }
-
-    public static String join(Iterable<? extends CharSequence> elements) {
-        return join(DEFAULT_JOIN_SEPARATOR, elements);
-    }
-
-    public static String join(String separator, Iterable<? extends CharSequence> elements) {
-        if (elements == null) {
-            return "";
-        }
-
-        StringJoiner joiner = new StringJoiner(separator);
-        elements.forEach(c -> {
-            if (isNotBlank(c)) {
-                joiner.add(c);
-            }
-        });
-
-        return joiner.toString();
     }
 
 }

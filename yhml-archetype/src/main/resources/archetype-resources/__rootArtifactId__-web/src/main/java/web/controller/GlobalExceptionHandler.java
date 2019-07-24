@@ -1,7 +1,10 @@
-import java.io.ByteArrayOutputStream;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.Locale;
+#set($symbol_pound='#')
+#set($symbol_dollar='$')
+#set($symbol_escape='\' )
+package ${package}.web.controller;
+
+import java.io.*;
+import java.util.*;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -27,25 +30,13 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartException;
 import org.springframework.web.multipart.support.MissingServletRequestPartException;
 
-import com.dington.saga.core.enums.ErrorTypeEnum;
-import com.dington.saga.core.exception.BaseAppException;
-import com.dington.saga.core.meta.Result;
 import com.google.common.base.Strings;
+
+import ${package}.biz.enums.ErrorEnum;
+import ${package}.web.constants.HttpHeaderConstant;
 
 import lombok.extern.slf4j.Slf4j;
 
-#set($symbol_pound='#')
-        #set($symbol_dollar='$')
-        #set($symbol_escape='\' ) package ${package}.web.controller;
-        {package}.biz.enums.ErrorEnum;
-        {package}.web.constants.HttpHeaderConstant;
-
-
-/**
- * Global异常
- *
- * @author bins
- */
 @Slf4j
 @ControllerAdvice
 public class GlobalExceptionHandler {

@@ -58,8 +58,7 @@ public class SSRBean {
     public SSRBean(String ssr) {
         if (ssr.startsWith("ssr://")) {
             parseSSRLink(ssr);
-        }
-        else if (ssr.startsWith("ss://")) {
+        } else if (ssr.startsWith("ss://")) {
             parseSSLink(ssr);
         }
     }
@@ -98,6 +97,7 @@ public class SSRBean {
 
         int i = 0;
         for (String value : val) {
+            // @formatter:off
             switch (i++) {
                 case 0: this.method = value; break;
                 case 1:
@@ -109,6 +109,7 @@ public class SSRBean {
                 case 5: this.password = value.split("/")[0]; break;
                 default:break;
             }
+            // @formatter:on
         }
     }
 
@@ -121,6 +122,7 @@ public class SSRBean {
      *
      * 184.170.208.44:16902:auth_aes128_sha1:chacha20:tls1.2_ticket_auth:MTk1MDQ5ODAwMA/?o
      * server:port:protocol:method:obfs:MTk1MDQ5ODAwMA/?obfsparam=&protoparam=&remarks=&group=
+     *
      * @return
      */
     public String toSSRLink() {
@@ -144,6 +146,7 @@ public class SSRBean {
 
     /**
      * ssr://server:port:protocol:method:obfs:password_base64/?params_base64
+     *
      * @param ssr
      */
     public void parseSSRLink(String ssr) {
@@ -155,6 +158,7 @@ public class SSRBean {
 
         int i = 0;
         for (String value : val) {
+            // @formatter:off
             switch (i++) {
                 case 0: this.server = value; break;
                 case 1: this.port = value; break;
@@ -167,12 +171,14 @@ public class SSRBean {
                     break;
                 default: break;
             }
+            // @formatter:on
         }
     }
 
     public static void main(String[] args) {
         // 184.170.208.44:16902:auth_aes128_sha1:chacha20:tls1.2_ticket_auth:MTk1MDQ5ODAwMA/?o
-        String str = "ssr://MTg0LjE3MC4yMDguNDQ6MTY5MDI6YXV0aF9hZXMxMjhfc2hhMTpjaGFjaGEyMDp0bHMxLjJfdGlja2V0X2F1dGg6TVRrMU1EUTVPREF3TUEvP29";
+        String str = "ssr" +
+                "://MTg0LjE3MC4yMDguNDQ6MTY5MDI6YXV0aF9hZXMxMjhfc2hhMTpjaGFjaGEyMDp0bHMxLjJfdGlja2V0X2F1dGg6TVRrMU1EUTVPREF3TUEvP29";
 
         System.out.println("===== ss ====");
         SSRBean bean = new SSRBean();
@@ -214,7 +220,7 @@ public class SSRBean {
     }
 
     public static String decodeBase64(String base64String) {
-        byte[] bytes =Base64Util.decode(base64String);
+        byte[] bytes = Base64Util.decode(base64String);
         return new String(bytes);
     }
 

@@ -1,0 +1,42 @@
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="${symbol_dollar}{package.Mapper}.${symbol_dollar}{table.mapperName}">
+
+#if(${symbol_dollar}{enableCache})
+    <!-- 开启二级缓存 -->
+    <cache type="org.mybatis.caches.ehcache.LoggingEhcache"/>
+#end
+    
+#if(${symbol_dollar}{baseResultMap})
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="${symbol_dollar}{package.Entity}.${symbol_dollar}{entity}">
+#foreach($field in ${symbol_dollar}{table.fields})
+#if(${symbol_dollar}{field.keyFlag})##生成主键排在第一位
+        <id column="${symbol_dollar}{field.name}" property="${symbol_dollar}{field.propertyName}" />
+#end
+#end
+#foreach($field in ${symbol_dollar}{table.commonFields})##生成公共字段
+    <result column="${symbol_dollar}{field.name}" property="${symbol_dollar}{field.propertyName}" />
+#end
+#foreach($field in ${symbol_dollar}{table.fields})
+#if(!${symbol_dollar}{field.keyFlag})##生成普通字段
+        <result column="${symbol_dollar}{field.name}" property="${symbol_dollar}{field.propertyName}" />
+#end
+#end
+    </resultMap>
+
+#end
+#if(${symbol_dollar}{baseColumnList})
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+#foreach($field in ${symbol_dollar}{table.commonFields})
+        ${symbol_dollar}{field.name},
+#end
+        ${symbol_dollar}{table.fieldNames}
+    </sql>
+
+#end
+</mapper>

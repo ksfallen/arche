@@ -1,12 +1,11 @@
-package ${package.Mapper};
+#set( $symbol_pound = '#' )
+#set( $symbol_dollar = '$' )
+#set( $symbol_escape = '\' )
+package ${symbol_dollar}{package.Mapper};
 
-import ${package.Entity}.${entity};
-import ${superMapperClassPackage};
+import ${symbol_dollar}{package.Entity}.${symbol_dollar}{entity};
+import ${symbol_dollar}{superMapperClassPackage};
 
-#if(${kotlin})
-interface ${table.mapperName} : ${superMapperClass}<${entity}>
-#else
-public interface ${table.mapperName} extends ${superMapperClass}<${entity}> {
+public interface ${symbol_dollar}{table.mapperName} extends ${symbol_dollar}{superMapperClass}<${symbol_dollar}{entity}> {
 
 }
-#end

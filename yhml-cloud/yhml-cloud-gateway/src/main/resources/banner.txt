@@ -1,0 +1,4 @@
+ ${AnsiColor.BRIGHT_MAGENTA}
+        .-..-..-..-..-..-..-..-..-..-.
+           ${spring.application.name} --by Jfeng
+        `-'`-'`-'`-'`-'`-'`-'`-'`-'`-'                     ${AnsiColor.DEFAULT}

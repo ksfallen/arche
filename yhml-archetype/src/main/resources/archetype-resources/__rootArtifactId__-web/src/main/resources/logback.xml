@@ -3,45 +3,59 @@
 #set( $symbol_escape = '\' )
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <!--<include resource="org/springframework/boot/logging/logback/base.xml"/>-->
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
-
-    <springProperty scope="context" name="appName" source="spring.application.name"
-                    defaultValue="spring-app"/>
-
-    <springProperty scope="context" name="LOG_PATH" source="logging.path"
-                    defaultValue="${symbol_dollar}{java.io.tmpdir:-/tmp}"/>
-    <springProperty scope="context" name="LOG_FILE" source="logging.file"
-                    defaultValue="${symbol_dollar}{appName:-spring-logback.log}"/>
-
-    <!-- 定义日志文件 输入位置 -->
-    <property name="LOG_PATH" value="/opt/logs/"/>
+    <springProperty scop="context" name="spring.application.name" source="spring.application.name" defaultValue=""/>
+    <property name="log_path" value="logs/${symbol_dollar}{spring.application.name}"/>
     <property name="LOG_FILE" value="application.log"/>
-    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %5p [%15.15t] [%-40.40logger{39}] [%file:%line] - %msg%n"/>
+
+    <!-- 彩色日志格式 -->
+    <property name="CONSOLE_LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) [%15.15t] %clr([%-40.40logger{39} %line]){cyan} : %m%n"/>
+
+    <!-- 彩色日志依赖的渲染类 -->
+    <conversionRule conversionWord="clr" converterClass="org.springframework.boot.logging.logback.ColorConverter"/>
+    <conversionRule conversionWord="wex" converterClass="org.springframework.boot.logging.logback.WhitespaceThrowableProxyConverter"/>
+    <conversionRule conversionWord="wEx" converterClass="org.springframework.boot.logging.logback.ExtendedWhitespaceThrowableProxyConverter"/>
+
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5p [%-40.40logger{39}] [%file:%line] - %msg%n"/>
 
 
-    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+    <!-- Console 输出设置 -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %clr(%5p) [%15.15t] %clr([%-40.40logger{39} %line]){cyan} - %m%n</pattern>
+            <pattern>${symbol_dollar}{CONSOLE_LOG_PATTERN}</pattern>
+            <charset>UTF-8</charset>
         </encoder>
-        <charset>UTF-8</charset>
     </appender>
 
+    <!--<appender name="debug" class="ch.qos.logback.core.rolling.RollingFileAppender">-->
+    <!--    <file>${log_path}/debug.log</file>-->
+    <!--    <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">-->
+    <!--        <fileNamePattern>${log_path}/%d{yyyy-MM-dd}/debug.log</fileNamePattern>-->
+    <!--        <maxHistory>30</maxHistory>-->
+    <!--    </rollingPolicy>-->
+    <!--    <encoder>-->
+    <!--        <pattern>${LOG_PATTERN}</pattern>-->
+    <!--        <charset>UTF-8</charset>-->
+    <!--        <immediateFlush>true</immediateFlush>-->
+    <!--    </encoder>-->
+    <!--    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+    <!--        <level>DEBUG</level>-->
+    <!--    </filter>-->
+    <!--</appender>-->
+
     <appender name="FILE_OUT" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>${symbol_dollar}{LOG_PATH}/${symbol_dollar}{LOG_FILE}.log</file>
+        <file>${symbol_dollar}{log_path}/%d{yyyy-MM-dd}/info.log</file>
         <encoder>
             <pattern>${symbol_dollar}{LOG_PATTERN}</pattern>
         </encoder>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${symbol_dollar}{LOG_PATH}/${symbol_dollar}{LOG_FILE}-%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${symbol_dollar}{log_path}/%d{yyyy-MM-dd}/debug.log</fileNamePattern>-->
             <maxHistory>60</maxHistory>
         </rollingPolicy>
     </appender>
 
+    <logger name="ch.qos.logback" level="error" additivity="false"/>
 
-    <root level="INFO">
-    </root>
-
+    <root level="INFO" />
 
     <!-- local -->
     <springProfile name="default,local,test,dev">
@@ -50,7 +64,7 @@
         <logger name="${pacakge}.api" level="debug"/>
 
         <root level="INFO">
-            <appender-ref ref="CONSOLE"/>
+            <appender-ref ref="console"/>
         </root>
     </springProfile>
 

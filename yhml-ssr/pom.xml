@@ -51,7 +51,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.yhml.ssr.Main</mainClass>
+                            <mainClass>com.yhml.ssr.SSRRun</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

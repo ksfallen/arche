@@ -1,8 +1,8 @@
 #set( $symbol_pound = '#' )
 #set( $symbol_dollar = '$' )
 #set( $symbol_escape = '\' )
-package ${package}.core.mapper;
+package ${package}.core.service;
 
-public interface UserInfoMapper {
+public interface UserInfoService {
 
 }

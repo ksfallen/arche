@@ -2,10 +2,7 @@ package com.yhml.core.base;
 
 import com.yhml.core.util.JsonUtil;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
@@ -16,16 +13,16 @@ public class BaseException extends RuntimeException {
     private static final long serialVersionUID = 4595060073570956480L;
 
     private String code;
-    private String message;
+    private String msg;
 
     public BaseException(ErrorMessge messge) {
         this.code = messge.getCode();
-        this.message = messge.getMessage();
+        this.msg = messge.getMsg();
     }
 
     public BaseException(String msg) {
         this.code = ErrorMessge.ERROR_SYS.getCode();
-        this.message = msg;
+        this.msg = msg;
     }
 
     @Override

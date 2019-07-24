@@ -3,45 +3,39 @@ package com.yhml.core.util;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
 
+import org.apache.commons.lang3.math.NumberUtils;
+
 /**
  * 精度运算
  */
-public class Arith {
+public class MathUtil extends NumberUtils {
 
+    public static final String DECIMAL_FORMAT_2 = "2";
+    public static final String DECIMAL_FORMAT_3 = "3";
     private static final int DEFAULT_DIV_SCALE = 5;
     private static final int DEFAULT_ROUNDINGMODE = BigDecimal.ROUND_HALF_UP;
     private static final DecimalFormat decimalFormat1 = new DecimalFormat("0");
     private static final DecimalFormat decimalFormat2 = new DecimalFormat("0.00");
     private static final DecimalFormat decimalFormat3 = new DecimalFormat("0.000");
     private static final BigDecimal one = new BigDecimal("1");
-
     /** 百分号 */
     public static DecimalFormat num = new DecimalFormat();
-
-    public static final String DECIMAL_FORMAT_0_00 = "1";
-    public static final String DECIMAL_FORMAT_0_000 = "2";
-    public static final String DECIMAL_FORMAT_0 = "3";
 
     static {
         num.applyPattern("0.00%");
     }
 
-    private Arith() {
-
-    }
 
     public static BigDecimal add(BigDecimal v1, BigDecimal v2) {
         return round(v1.add(v2));
     }
 
-    public static Double add(double v1, double v2) {
-        BigDecimal b1 = new BigDecimal(Double.toString(v1));
-        BigDecimal b2 = new BigDecimal(Double.toString(v2));
-        return b1.add(b2).doubleValue();
+    public static double add(double v1, double v2) {
+        return new BigDecimal(v1).add(new BigDecimal(v2)).doubleValue();
     }
 
-    public static Double add(double... value) {
-        BigDecimal ret = new BigDecimal("0");
+    public static double add(double... value) {
+        BigDecimal ret = new BigDecimal(0);
 
         for (double v : value) {
             BigDecimal temp = new BigDecimal(Double.toString(v));
@@ -56,10 +50,13 @@ public class Arith {
         return round(minuend.subtract(subtrahend));
     }
 
+    /**
+     * 减法
+     *
+     * @return
+     */
     public static double sub(double v1, double v2) {
-        BigDecimal b1 = new BigDecimal(Double.toString(v1));
-        BigDecimal b2 = new BigDecimal(Double.toString(v2));
-        return b1.subtract(b2).doubleValue();
+        return new BigDecimal(v1).subtract(new BigDecimal(v2)).doubleValue();
     }
 
 
@@ -75,9 +72,7 @@ public class Arith {
      * @return 两个参数的积
      */
     public static double mul(double v1, double v2) {
-        BigDecimal b1 = new BigDecimal(Double.toString(v1));
-        BigDecimal b2 = new BigDecimal(Double.toString(v2));
-        return b1.multiply(b2).doubleValue();
+        return new BigDecimal(v1).multiply(new BigDecimal(v2)).doubleValue();
     }
 
     public static double mulAndRound(double v1, double v2) {
@@ -98,8 +93,9 @@ public class Arith {
 
     /**
      * 提供（相对）精确的除法运算。当发生除不尽的情况时，由scale参数指   定精度，以后的数字四舍五入
-     * @param v1 被除数
-     * @param v2 除数
+     *
+     * @param v1    被除数
+     * @param v2    除数
      * @param scale 表示表示需要精确到小数点以后几位
      * @return
      */
@@ -131,16 +127,12 @@ public class Arith {
         double d = getDouble(v);
 
         switch (type) {
-            case DECIMAL_FORMAT_0_00:
-                str = format(d);
-                break;
-            case DECIMAL_FORMAT_0_000:
+            case DECIMAL_FORMAT_2:
                 str = format2(d);
                 break;
-            case DECIMAL_FORMAT_0:
+            case DECIMAL_FORMAT_3:
                 str = format3(d);
                 break;
-
             default:
                 str = format(d);
                 break;
@@ -172,10 +164,7 @@ public class Arith {
 
     public static String formatDouble(double d) {
         String res = num.format(d);
-        if (res.equals("-0.00%")) {
-            res = "0.00%";
-        }
-        return res;
+        return res.equals("-0.00%") ? "0.00%" : res;
     }
 
     public static int getInt(Integer v) {

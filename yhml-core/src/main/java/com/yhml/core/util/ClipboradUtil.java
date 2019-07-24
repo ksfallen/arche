@@ -17,11 +17,11 @@ public class ClipboradUtil {
     public static void main(String[] args) {
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();//获取系统剪贴板
 
-        try {
-            ImageViewer im = new ImageViewer(getImageFromClipboard());
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        // try {
+        //     ImageViewer im = new ImageViewer(getImageFromClipboard());
+        // } catch (Exception e) {
+        //     e.printStackTrace();
+        // }
     }
 
     /**
