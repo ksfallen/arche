@@ -16,13 +16,8 @@ public class StringUtil extends StringUtils {
 
     public static final String DEFAULT_JOIN_SEPARATOR = ",";
 
-    public static void main(String[] args) {
-        String format = format("name:{}, value:{}", "a", "bak");
-        System.out.println(format);
-    }
-
     public static String toString(Object obj, String defaultValue) {
-        return obj != null ? obj.toString() : defaultValue;
+        return Objects.toString(obj, defaultValue);
     }
 
     /**
@@ -38,7 +33,7 @@ public class StringUtil extends StringUtils {
             if (isUppercaseAlpha(c)) {
                 sb.append('_').append(toLowerAscii(c));
             } else {
-                sb.append(toUpperAscii(c));
+                sb.append(toLowerAscii(c));
             }
         }
         return sb.charAt(0) == '_' ? sb.substring(1) : sb.toString();
@@ -197,5 +192,16 @@ public class StringUtil extends StringUtils {
 
         return sb.toString();
     }
+
+    public enum Style {
+        normal,                     // 原值
+        camel,                  	// 驼峰转下划线
+        uppercase,                  // 转换为大写
+        lowercase,                  // 转换为小写
+        camelAndUppercase,     		// 驼峰转下划线大写形式
+        camelAndLowercase,     		// 驼峰转下划线小写形式
+        underlineToCamel,       	// 下划线转驼峰
+    }
+
 
 }

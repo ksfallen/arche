@@ -1,6 +1,9 @@
-package com.java8.lambda;
+package com.yhml.test.java;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
 import java.util.stream.IntStream;
 
 import org.junit.Test;
@@ -12,17 +15,9 @@ import static java.util.stream.Collectors.toList;
  * @date: 2018/6/29
  */
 public class StreamTest {
-    public static void main(String[] args) {
 
-
-    }
-
-    public static void test() {
-        List<String> list = new ArrayList<>();
-        list.stream().filter(s -> s.equals("a")).forEach(s -> s.toLowerCase());
-    }
-
-    public static void test2() {
+    @Test
+    public void test2() {
         List<Integer> list = new ArrayList<>();
         list.add(1);
         list.add(2);
@@ -40,12 +35,14 @@ public class StreamTest {
         // 降序排序 o1小于o2，返回1（正数）， 相等返回0，01大于02返回-1（负数）
 
         // 升序
-        list.sort(new Comparator<Integer>() {
-            @Override
-            public int compare(Integer o1, Integer o2) {
-                return o1 - o2;
-            }
-        });
+        // list.sort(new Comparator<Integer>() {
+        //     @Override
+        //     public int compare(Integer o1, Integer o2) {
+        //         return o1 - o2;
+        //     }
+        // });
+
+        list.sort(((o1, o2) -> o1 - o2));
 
         System.out.println("升序:" + list);
 

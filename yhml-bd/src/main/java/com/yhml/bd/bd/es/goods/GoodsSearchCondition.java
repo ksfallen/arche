@@ -4,11 +4,11 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import com.simple.common.es.enums.CompareOperation;
-import com.simple.common.es.enums.QueryMethod;
-import com.simple.common.es.annotation.RangeCompare;
-import com.simple.common.es.annotation.SearchInfo;
-import com.simple.common.es.model.SearchCondition;
+import com.yhml.bd.bd.es.annotation.RangeCompare;
+import com.yhml.bd.bd.es.annotation.SearchInfo;
+import com.yhml.bd.bd.es.enums.CompareOperation;
+import com.yhml.bd.bd.es.enums.QueryMethod;
+import com.yhml.bd.bd.es.model.SearchCondition;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -17,7 +17,6 @@ import lombok.Setter;
 /**
  * 搜索条件
  */
-
 @Getter
 @Setter
 public class GoodsSearchCondition extends SearchCondition {
@@ -105,7 +104,7 @@ public class GoodsSearchCondition extends SearchCondition {
         }
         return null;
     }
-    
+
 
     //    public static void main(String[] args) {
     //        System.out.println(areaCodePath("100000"));

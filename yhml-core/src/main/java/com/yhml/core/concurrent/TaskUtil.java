@@ -17,7 +17,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 public class TaskUtil {
 
     public static void main(String[] args) {
-        timeTask(100, 100, () -> UUID.randomUUID().toString());
+        timeTask(10, 10, () -> UUID.randomUUID().toString());
     }
 
     /**
@@ -32,7 +32,7 @@ public class TaskUtil {
         final CountDownLatch startGate = new CountDownLatch(1);
         final CountDownLatch endGate = new CountDownLatch(nThreads);
 
-        ThreadFactory tf = Executors.defaultThreadFactory();
+        ThreadFactory threadFactory = Executors.defaultThreadFactory();
 
         final AtomicLong sum = new AtomicLong();
         final AtomicLong min = new AtomicLong(10000);
@@ -40,7 +40,7 @@ public class TaskUtil {
 
 
         for (int i = 0; i < nThreads; i++) {
-            Thread thread = tf.newThread(() -> {
+            Thread thread = threadFactory.newThread(() -> {
                 try {
                     startGate.await();
                     for (int j = 0; j < singleNum; j++) {
@@ -49,7 +49,7 @@ public class TaskUtil {
                             task.run();
                         } finally {
                             long end = System.nanoTime();
-                            long at = (end - start) / 1000 / 1000;
+                            long at = (end - start) / 1000000;// ms;
                             sum.addAndGet(at);
                             if (min.get() > at) {
                                 min.getAndSet(at);
@@ -71,6 +71,11 @@ public class TaskUtil {
         startGate.countDown();
         long st = System.currentTimeMillis();
 
+        System.out.println("--------------------");
+        System.out.println("任务开始");
+        System.out.println("线程数: " + nThreads);
+        System.out.println("单个线程执行个数: " + singleNum);
+
         try {
             endGate.await();
         } catch (InterruptedException e) {
@@ -81,11 +86,10 @@ public class TaskUtil {
 
         int taskNum = nThreads * singleNum;
 
-        System.out.println("--------------------");
         System.out.println("执行任务数: " + taskNum);
         System.out.println("--------------------");
-        System.out.println("所有线程共耗时:" + div(sum.get(), 1000) + " s");
         System.out.println("并发执行完成耗时:" + div(ed, 1000) + " s");
+        System.out.println("所有线程共耗时:" + div(sum.get(), 1000) + " s");
         System.out.println("单任务平均耗时:" + div(sum.get(), taskNum) + " ms");
         System.out.println("单线程最小耗时:" + div(min.get(), 1) + " ms");
         System.out.println("单线程最大耗时:" + div(max.get(), 1) + " ms");

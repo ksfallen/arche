@@ -25,7 +25,7 @@
         <commons-math3.version>3.6.1</commons-math3.version>
         <commons-collections4.version>4.2</commons-collections4.version>
         <commons-beanutils.version>1.9.3</commons-beanutils.version>
-        <baidu-aip.version>4.8.0</baidu-aip.version>
+        <baidu-aip.version>4.11.3</baidu-aip.version>
         <fastjson.version>1.2.47</fastjson.version>
         <guava.version>21.0</guava.version>
         <hutool.version>4.5.15</hutool.version>
@@ -163,17 +163,6 @@
                 <artifactId>pinyin4j</artifactId>
                 <version>${pinyin4j.version}</version>
             </dependency>
-            <!-- http://www.selma-java.org/#using-maven bean对象转换-->
-            <!--            <dependency>-->
-            <!--                <groupId>fr.xebia.extras</groupId>-->
-            <!--                <artifactId>selma-processor</artifactId>-->
-            <!--                <version>${selma.version}</version>-->
-            <!--            </dependency>-->
-            <!--            <dependency>-->
-            <!--                <groupId>fr.xebia.extras</groupId>-->
-            <!--                <artifactId>selma</artifactId>-->
-            <!--                <version>${selma.version}</version>-->
-            <!--            </dependency>-->
             <dependency>
                 <groupId>org.redisson</groupId>
                 <artifactId>redisson</artifactId>

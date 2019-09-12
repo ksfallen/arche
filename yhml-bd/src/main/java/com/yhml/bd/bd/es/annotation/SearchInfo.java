@@ -5,7 +5,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.simple.common.es.enums.QueryMethod;
+import com.yhml.bd.bd.es.enums.QueryMethod;
 
 
 @Retention(RetentionPolicy.RUNTIME)
