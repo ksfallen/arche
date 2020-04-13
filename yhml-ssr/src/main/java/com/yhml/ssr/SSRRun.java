@@ -1,36 +1,55 @@
 package com.yhml.ssr;
 
+import com.yhml.ssr.baidu.BaiduOcrApi;
+import com.yhml.ssr.baidu.BaiduOcrResult;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import lombok.ToString;
+
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import org.jsoup.Jsoup;
-import org.jsoup.helper.StringUtil;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
-import com.yhml.ssr.baidu.BaiduOcrApi;
-import com.yhml.ssr.baidu.BaiduOcrResult;
-import com.yhml.ssr.baidu.WordsResult;
-
-import lombok.Cleanup;
-
+@ToString
 public class SSRRun {
+    private static final String ssr = "ssr";
+    private static final String v2ary = "v2ary";
 
-    String output = ".";
-    boolean openLink = false;
+    private String output = ".";
+    private String type = ssr;
+    private boolean openLink = false;
 
     public static void main(String[] args) throws Exception {
-        SSRRun bean = new SSRRun();
+        SSRRun run = new SSRRun();
 
+        // @formatter:off
+        for (int index = 0; index < args.length; index++) {
+            String value = args[index];
+            switch (index) {
+                case 0: run.type = value; break;
+                case 1: run.openLink =  Boolean.parseBoolean(value); break;
+                case 2: run.output = value; break;
+                default:
+            }
+        }
+        // @formatter:on
+        run.run();
+    }
+
+    private void run() throws Exception {
         URL resource = SSRRun.class.getResource("");
 
         if (resource != null) {
@@ -38,96 +57,69 @@ public class SSRRun {
             path = path.substring(0, path.lastIndexOf("yhml-ssr"));
 
             if (!resource.getPath().contains(".jar!")) {
-                path += "yhml-ssr/";
+                path += "yhml-ssr";
             }
 
-            bean.output = path;
+            this.output = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
         }
 
-        // @formatter:off
-        for (int index = 0; index < args.length; index++) {
-            String value = args[index];
-            switch (index) {
-                case 1: bean.openLink =  Boolean.valueOf(value); break;
-                case 2: bean.output = value; break;
-                default:
-            }
+        System.out.println("[#] output: " + this.output);
+        System.out.println("[#] openLink: " + this.openLink);
+
+        if (ssr.contains(this.type)) {
+            ssr();
+        } else if (v2ary.contains(this.type)) {
+            v2ary();
+        } else {
+            System.out.println("类型参数错误");
         }
-        // @formatter:on
-
-        System.out.println("[#] output: " + bean.output);
-        System.out.println("[#] openLink: " + bean.openLink);
-
-        bean.ssr();
     }
 
+    private static String getWord(String value) {
+        String[] split = value.replace("：", ":").split(":");
+        return split.length == 1 ? split[0].toLowerCase().trim() : split[1].toLowerCase().trim();
+    }
+
+    private static String getServer(String value) {
+        Pattern pattern = Pattern.compile("\\d+.");
+        Matcher matcher = pattern.matcher(value);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            sb.append(matcher.group());
+        }
+        return sb.toString();
+    }
+
+    private static String getPort(String value) {
+        Pattern pattern = Pattern.compile("\\d+");
+        Matcher matcher = pattern.matcher(value);
+        StringBuilder sb = new StringBuilder();
+        while (matcher.find()) {
+            sb.append(matcher.group());
+        }
+        return sb.toString();
+    }
+
+
     public void ssr() throws Exception {
-        String url = "https://github.com/Alvin9999/new-pac/wiki/ss%E5%85%8D%E8%B4%B9%E8%B4%A6%E5%8F%B7";
+        String url = "https://github.com/Alvin9999/new-pac/wiki/ss免费账号";
         Document doc = Jsoup.connect(url).get();
-        Elements images = doc.select("img[src~=(?i)\\.(png|jpe?g)]");
+        boolean isStop = false;
 
-        String src = "";
-        for (Element image : images) {
-            src = image.attr("src");
-            System.out.println("[#] img src: " + src);
-            if (src.contains("master")) {
-                break;
-            }
-        }
+        // 解析文本
+        Elements elements = doc.select("p");
+        List<SSRBean> list = parseText(elements);
 
-        System.out.println("[#] ssr image: " + src);
-
-        if (src == null || src.length() == 0) {
-            return;
-        }
-
-        String file = download(output, src);
-        File imageFile = new File(file);
-
-        if (!imageFile.exists()) {
-            System.out.println("[#] image file 不存在: " + imageFile.getAbsolutePath());
-            return;
-        }
-
-        BaiduOcrResult words = BaiduOcrApi.parse(imageFile.getAbsolutePath());
-
-        int i = 0;
-
-        SSRBean bean = new SSRBean();
-        List<SSRBean> list = new ArrayList<>();
-        for (WordsResult word : words.getWordsResult()) {
-            String value = word.getWords().trim().replaceAll("[()\\s协议混淆]", "");
-
-            if (i == 0) {
-                bean = new SSRBean();
-                list.add(bean);
-            }
-
-            // @formatter:off
-            switch (i++) {
-                case 0: break;
-                case 1: bean.setServer(getWord(value)); break;
-                case 2: bean.setPort(getWord(value)); break;
-                case 3: bean.setPassword(getWord(value)); break;
-                case 4: bean.setMethod(getWord(value)); break;
-                case 5: bean.setProtocol(getWord(value)); break;
-                case 6:
-                    bean.setObfs(getWord(value));
-                    i = 0;
-                    break;
-                default:
-            }
-            // @formatter:on
-        }
+        // 解析图片
+        // Elements elements = doc.select("img[src]");
+        // List<SSRBean> list = parseImage(elements);
 
         System.out.println("\n============");
-        for (SSRBean bean1 : list) {
-            String link = bean1.toSSRLink();
-            System.out.println(link);
-
+        for (SSRBean ssr : list) {
+            System.out.println(ssr.toSSRLink());
             if (openLink) {
                 try {
-                    Desktop.getDesktop().browse(new URI(link));
+                    Desktop.getDesktop().browse(new URI(ssr.toSSRLink()));
                     TimeUnit.SECONDS.sleep(1);
                 } catch (Exception ignored) {
                 }
@@ -135,50 +127,166 @@ public class SSRRun {
         }
     }
 
-    private static String getWord(String value) {
-        String[] split = value.split(":");
-        return split.length == 1 ? split[0].toLowerCase() : split[1].toLowerCase();
+    public void v2ary() throws Exception {
+        String url = "https://github.com/Alvin9999/new-pac/wiki/v2ray免费账号";
+        Document doc = Jsoup.connect(url).get();
+        boolean isStop = false;
+
+        // 解析文本
+        Elements elements = doc.select("p");
+        List<V2rayBean> list = parseTextTov2ary(elements);
+
+        System.out.println("\n============");
+        // for (V2rayBean ssr : list) {
+        //     System.out.println(ssr.toSSRLink());
+        //     if (openLink) {
+        //         try {
+        //             Desktop.getDesktop().browse(new URI(ssr.toSSRLink()));
+        //             TimeUnit.SECONDS.sleep(1);
+        //         } catch (Exception ignored) {
+        //         }
+        //     }
+        // }
     }
 
-    public static String download(String output, String url) {
-        String pathname = "";
-        try {
-            if (StringUtil.isBlank(url)) {
-                System.out.println("url is blank: " + url);
-                return pathname;
+    private List<SSRBean> parseText(Elements elements) {
+        List<SSRBean> list = new ArrayList<>();
+        Pattern pattern = Pattern.compile("\\d{2,3}.\\d{2,3}.\\d{2,3}.\\d{2,3}");
+        for (int i = 0; i < elements.size(); i++) {
+            Element element = elements.get(i);
+            String text = element.text();
+            Matcher matcher = pattern.matcher(text);
+            if (!matcher.find()) {
+                continue;
             }
 
-            //开始时间
-            long t = System.currentTimeMillis();
+            String server = matcher.group();
+            String port = elements.get(++i).text();
+            String passwd = elements.get(++i).text();
+            String method = elements.get(++i).text();
+            String protocol = elements.get(++i).text();
+            String obfs = elements.get(++i).text();
+            SSRBean bean = new SSRBean();
+            bean.setServer(server).setPort(getWord(port)).setPassword(getWord(passwd));
+            bean.setMethod(getWord(method)).setProtocol(getWord(protocol)).setObfs(getWord(obfs));
 
-            System.out.println("[#] 开始下载:" + url);
+            System.out.println("\n" + bean);
+            list.add(bean);
+        }
+        return list;
+    }
 
-            String imageName = url.substring(url.lastIndexOf("/") + 1);
-            URL uri = new URL(url);
-
-            @Cleanup InputStream in = uri.openStream();
-
-            //文件输出流
-            pathname = output + File.separator + imageName;
-            @Cleanup FileOutputStream fo = new FileOutputStream(new File(pathname));
-
-            byte[] buf = new byte[1024];
-            int length = 0;
-
-            while ((length = in.read(buf, 0, buf.length)) != -1) {
-                fo.write(buf, 0, length);
+    private List<V2rayBean> parseTextTov2ary(Elements elements) {
+        List<V2rayBean> list = new ArrayList<>();
+        for (int i = 0; i < elements.size(); i++) {
+            Element element = elements.get(i);
+            String text = element.text();
+            if (!text.contains("Address")) {
+                continue;
             }
 
-            //结束时间
-            System.out.println("[#] SSR 图片文件: " + pathname);
-            System.out.println("[#] time: " + (System.currentTimeMillis() - t));
+            String address = text;
+            String port = elements.get(++i).text();
+            String uid = elements.get(++i).text();
+            String alterId = elements.get(++i).text();
+            String security = elements.get(++i).text();
+            String network = elements.get(++i).text();
+            String headerType = elements.get(++i).text();
+            String path = elements.get(++i).text();
+            String tls = elements.get(++i).text();
+            V2rayBean bean = new V2rayBean();
+            bean.setAddress(getWord(address)).setPort(getWord(port)).setUuid(getWord(uid));
+            bean.setAlterId(getWord(alterId)).setSecurity(getWord(security)).setNetwork(getWord(network));
+            bean.setHeaderType(getWord(headerType)).setPath(getWord(path)).setTls(getWord(tls));
+            System.out.println("\n" + bean);
+            list.add(bean);
+        }
+        return list;
+    }
 
-        } catch (IOException ex) {
-            System.out.println("[x] 下载失败");
-            ex.printStackTrace();
+    private List<SSRBean> parseImage(Elements images) {
+        String url = "";
+        for (Element image : images) {
+            url = image.attr("src");
+            if (url == null || url.length() == 0) {
+                continue;
+            }
+            System.out.println("[#] img url: " + url);
+            if (image.attr("data-canonical-url").contains("loli")) {
+                url = image.attr("data-canonical-url");
+                break;
+            }
+        }
+        if (url == null || url.length() == 0) {
+            return new ArrayList<>();
         }
 
-        return pathname;
+        String imageName = "ssr.png";
+        // String file = download(output, url);
+        if (!url.startsWith("https://")) {
+            url = "https://t1.free-air.org" + url;
+        }
+
+        File imageFile = download(new File(output, imageName), url);
+
+        if (!imageFile.exists()) {
+            System.out.println("[#] image file 不存在: " + imageFile.getAbsolutePath());
+            return new ArrayList<>();
+        }
+
+        BaiduOcrResult words = BaiduOcrApi.parse(imageFile.getAbsolutePath());
+        return SSRUtil.parse2(words);
+    }
+
+    public static File download(File newFile, String urlStr) {
+        System.out.println("[#] 开始下载:" + urlStr);
+        HttpURLConnection httpUrlConnection = null;
+        InputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            httpUrlConnection = getHttpInputStream(urlStr);
+            fis = httpUrlConnection.getInputStream();
+            fos = new FileOutputStream(newFile);
+            byte[] temp = new byte[1024];
+            int b;
+            while ((b = fis.read(temp)) != -1) {
+                fos.write(temp, 0, b);
+                fos.flush();
+            }
+        } catch (Exception e) {
+            System.out.println("[#] image file 下载失败: " + urlStr);
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+                if (httpUrlConnection != null) {
+                    httpUrlConnection.disconnect();
+                }
+            } catch (IOException ignored) {
+            }
+        }
+        System.out.println("[#] image file: " + newFile.getAbsolutePath());
+        return newFile;
+    }
+
+    private static HttpURLConnection getHttpInputStream(String urlStr) throws IOException {
+        HttpURLConnection httpUrlConnection = null;
+        URL url = new URL(urlStr);
+        httpUrlConnection = (HttpURLConnection) url.openConnection();
+        httpUrlConnection.setConnectTimeout(10 * 1000);
+        httpUrlConnection.setDoInput(true);
+        httpUrlConnection.setDoOutput(true);
+        httpUrlConnection.setUseCaches(false);
+        httpUrlConnection.setRequestMethod("GET");
+        httpUrlConnection.setRequestProperty("CHARSET", "UTF-8");
+        httpUrlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)"); // 服务器端禁止抓取
+        httpUrlConnection.connect();
+        return httpUrlConnection;
     }
 
 }

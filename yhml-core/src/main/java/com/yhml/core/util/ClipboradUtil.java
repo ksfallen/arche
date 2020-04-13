@@ -2,21 +2,13 @@ package com.yhml.core.util;
 
 import java.awt.*;
 import java.awt.datatransfer.*;
-import java.io.IOException;
 
 /**
- * 取系统剪贴板
+ * 系统剪贴板
  */
 public class ClipboradUtil {
-    /**
-     * @param args
-     * @Description:
-     * @author zhk
-     * @createtime 2012-7-12 上午11:33:06
-     */
-    public static void main(String[] args) {
-        Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();//获取系统剪贴板
 
+    public static void main(String[] args) {
         // try {
         //     ImageViewer im = new ImageViewer(getImageFromClipboard());
         // } catch (Exception e) {
@@ -33,29 +25,33 @@ public class ClipboradUtil {
     protected static String getClipboardText() throws Exception {
         Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();//获取系统剪贴板
         // 获取剪切板中的内容
-        Transferable clipT = clip.getContents(null);
-        if (clipT != null) {
+        Transferable trans = clip.getContents(null);
+        if (trans != null) {
             // 检查内容是否是文本类型
-            if (clipT.isDataFlavorSupported(DataFlavor.stringFlavor))
-                return (String) clipT.getTransferData(DataFlavor.stringFlavor);
+            if (trans.isDataFlavorSupported(DataFlavor.stringFlavor))
+                return (String) trans.getTransferData(DataFlavor.stringFlavor);
         }
-        return null;
+        return StringUtil.EMPTY;
     }
 
-    //往剪切板写文本数据
-    protected static void setClipboardText(Clipboard clip, String writeMe) {
-        Transferable tText = new StringSelection(writeMe);
-        clip.setContents(tText, null);
+    /**
+     * 往剪切板写文本数据
+     */
+    public static void setClipboardText(String content) {
+        Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable trans = new StringSelection(content);
+        clip.setContents(trans, null);
     }
 
-    // 从剪切板读取图像
+    /**
+     * 从剪切板读取图像
+     */
     public static Image getImageFromClipboard() throws Exception {
-        Clipboard sysc = Toolkit.getDefaultToolkit().getSystemClipboard();
-        Transferable cc = sysc.getContents(null);
-        if (cc == null)
-            return null;
-        else if (cc.isDataFlavorSupported(DataFlavor.imageFlavor))
-            return (Image) cc.getTransferData(DataFlavor.imageFlavor);
+        Clipboard clip = Toolkit.getDefaultToolkit().getSystemClipboard();
+        Transferable trans = clip.getContents(null);
+        if (trans != null && trans.isDataFlavorSupported(DataFlavor.imageFlavor)) {
+            return (Image) trans.getTransferData(DataFlavor.imageFlavor);
+        }
         return null;
     }
 
@@ -71,7 +67,7 @@ public class ClipboradUtil {
                 return DataFlavor.imageFlavor.equals(flavor);
             }
 
-            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
+            public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException {
                 if (isDataFlavorSupported(flavor))
                     return image;
                 throw new UnsupportedFlavorException(flavor);

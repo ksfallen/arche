@@ -1,21 +1,20 @@
 package com.yhml.cache.aop;
 
-import javax.servlet.http.HttpServletRequest;
-
+import com.yhml.core.util.JsonUtil;
+import com.yhml.core.util.RequestUtil;
+import com.yhml.core.util.fastjson.SimplePropertyPreFilter;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
 
-import com.yhml.core.util.JsonUtil;
-import com.yhml.core.util.RequestUtil;
-import com.yhml.core.util.fastjson.SimplePropertyPreFilter;
-
 import cn.hutool.core.date.TimeInterval;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.servlet.http.HttpServletRequest;
 
 @Aspect
 @Component
@@ -122,6 +121,6 @@ public class LogAspect {
     // }
 
     protected String toJson(Object result) {
-        return JsonUtil.toJsonString(result, filter);
+        return JsonUtil.toJsonString(result);
     }
 }

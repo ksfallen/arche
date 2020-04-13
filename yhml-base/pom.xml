@@ -26,7 +26,7 @@
         <commons-collections4.version>4.2</commons-collections4.version>
         <commons-beanutils.version>1.9.3</commons-beanutils.version>
         <baidu-aip.version>4.11.3</baidu-aip.version>
-        <fastjson.version>1.2.47</fastjson.version>
+        <fastjson.version>1.2.60</fastjson.version>
         <guava.version>21.0</guava.version>
         <hutool.version>4.5.15</hutool.version>
         <httpclinet.version>4.3.6</httpclinet.version>
@@ -40,7 +40,7 @@
         <jsoup.version>1.11.3</jsoup.version>
         <shiro-spring.version>1.4.0</shiro-spring.version>
 
-        <zookeeper-version>3.4.10</zookeeper-version>
+        <zookeeper-version>3.4.14</zookeeper-version>
         <spring-cloud-zuul-ratelimit.version>2.0.0.RELEASE</spring-cloud-zuul-ratelimit.version>
         <spring-cloud.version>Finchley.RELEASE</spring-cloud.version>
 

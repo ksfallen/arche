@@ -1,15 +1,13 @@
 package com.yhml.ssr.baidu;
 
-import java.util.HashMap;
-
-import org.apache.log4j.Level;
+import com.alibaba.fastjson.JSON;
+import com.baidu.aip.client.BaseClient;
+import com.baidu.aip.ocr.AipOcr;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import com.alibaba.fastjson.JSON;
-import com.baidu.aip.client.BaseClient;
-import com.baidu.aip.ocr.AipOcr;
+import java.util.HashMap;
 
 /**
  * https://cloud.baidu.com/doc/OCR/index.html
@@ -33,23 +31,28 @@ public class BaiduOcrApi {
 
         // 可选：设置log4j日志输出格式，若不设置，则使用默认配置
         // 也可以直接通过jvm启动参数设置此环境变量
-        LOGGER.setLevel(Level.ERROR);
+        // LOGGER.setLevel(Level.ERROR);
     }
 
 
     public static String parse(String path, HashMap<String, String> options) {
-
+        if (options == null) {
+            options = new HashMap<>();
+        }
         // 传入可选参数调用接口
         // HashMap<String, String> options = new HashMap<>();
-        // options.put("language_type", "CHN_ENG");
+        options.put("language_type", "CHN_ENG");
         // options.put("detect_direction", "false");
         // options.put("detect_language", "true");
         options.put("probability", "false");
 
         // 调用接口
-        JSONObject res = client.basicGeneral(path, options);
+        // JSONObject res = client.basicGeneral(path, options);
+        JSONObject res = client.basicAccurateGeneral(path, options);
         try {
-            return res.toString(2);
+            String ret = res.toString(2);
+            System.out.println(ret);
+            return ret;
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -58,10 +61,8 @@ public class BaiduOcrApi {
     }
 
     public static BaiduOcrResult parse(String path) {
-        String text = parse(path, new HashMap<>());
-        System.out.println(text);
+        String text = parse(path, null);
         return JSON.parseObject(text, BaiduOcrResult.class);
     }
-
 
 }

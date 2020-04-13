@@ -1,26 +1,23 @@
 package com.yhml.ssr;
 
+import com.baidu.aip.util.Base64Util;
+import org.jsoup.helper.StringUtil;
+
+import lombok.*;
+import lombok.experimental.Accessors;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
-import org.jsoup.helper.StringUtil;
-
-import com.alibaba.fastjson.JSON;
-import com.baidu.aip.util.Base64Util;
-
-import lombok.*;
-
 /**
  * @author: Jfeng
  * @date: 2019-06-18
  */
-@Getter
-@Setter
-@Builder
+@Data
 @AllArgsConstructor
-@NoArgsConstructor
+@Accessors(chain = true)
 public class SSRBean {
     private String server;
     private String port;
@@ -34,12 +31,12 @@ public class SSRBean {
     /**
      * 协议 origin
      */
-    private String protocol;
+    private String protocol = "origin";
 
     /**
      * 混淆 plain
      */
-    private String obfs;
+    private String obfs = "plain";
 
     /**
      * 备注
@@ -54,6 +51,10 @@ public class SSRBean {
      * false
      */
     private Boolean auth;
+
+    public SSRBean() {
+
+    }
 
     public SSRBean(String ssr) {
         if (ssr.startsWith("ssr://")) {
@@ -214,10 +215,7 @@ public class SSRBean {
         return joiner.toString();
     }
 
-    @Override
-    public String toString() {
-        return JSON.toJSONString(this);
-    }
+
 
     public static String decodeBase64(String base64String) {
         byte[] bytes = Base64Util.decode(base64String);
@@ -227,5 +225,16 @@ public class SSRBean {
     public static String encodeBase64(String str) {
         byte[] binaryData = str.getBytes();
         return Base64Util.encode(binaryData);
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("账号: ").append(server).append("\n");
+        sb.append("端口: ").append(port).append("\n");
+        sb.append("密码: ").append(password).append("\n");
+        sb.append("加密方式:").append(method).append("\n");
+        sb.append("协议: ").append(protocol).append("\n");
+        sb.append("混淆: ").append(obfs);
+        return sb.toString();
     }
 }
