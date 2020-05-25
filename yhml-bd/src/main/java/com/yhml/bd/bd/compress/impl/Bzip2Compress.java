@@ -7,12 +7,12 @@ import java.io.IOException;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorOutputStream;
 
-import com.simple.common.compress.Compress;
-import com.simple.common.compress.support.SPI;
+import com.yhml.bd.bd.compress.Compress;
+import com.yhml.bd.bd.compress.support.SPI;
 
 /**
  * The Data Compression Based on bzip2.
- * 
+ *
  * @author lry
  */
 @SPI("bzip2")

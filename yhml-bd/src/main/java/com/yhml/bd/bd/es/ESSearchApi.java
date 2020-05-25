@@ -1,5 +1,11 @@
 package com.yhml.bd.bd.es;
 
+import com.yhml.bd.bd.es.annotation.RangeCompare;
+import com.yhml.bd.bd.es.annotation.SearchInfo;
+import com.yhml.bd.bd.es.enums.CompareOperation;
+import com.yhml.bd.bd.es.model.SearchCondition;
+import com.yhml.bd.bd.es.model.SearchQuery;
+
 import java.io.Closeable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -26,11 +32,7 @@ import org.elasticsearch.search.sort.SortBuilders;
 import org.elasticsearch.search.sort.SortOrder;
 import org.springframework.stereotype.Service;
 
-import com.simple.common.es.enums.CompareOperation;
-import com.simple.common.es.annotation.RangeCompare;
-import com.simple.common.es.annotation.SearchInfo;
-import com.simple.common.es.model.SearchCondition;
-import com.simple.common.es.model.SearchQuery;
+
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -136,7 +138,7 @@ public class ESSearchApi implements Closeable {
     public SearchResponse search(SearchQuery query, String index, String types) {
         SearchRequestBuilder builder = client.prepareSearch(index)
                 .setTypes(types)
-                .setQuery(queryBuilder(query.getCondition()))
+                // .setQuery(queryBuilder(query.getCondition()))
                 .setFrom((query.getPageNo() - 1) * query.getPageSize())
                 .setSize(query.getPageSize());
 

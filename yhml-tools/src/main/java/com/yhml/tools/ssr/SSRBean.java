@@ -1,22 +1,21 @@
-package com.yhml.ssr;
-
-import com.baidu.aip.util.Base64Util;
-import org.jsoup.helper.StringUtil;
-
-import lombok.*;
-import lombok.experimental.Accessors;
+package com.yhml.tools.ssr;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
 
+import com.baidu.aip.util.Base64Util;
+import org.jsoup.helper.StringUtil;
+
+import lombok.Data;
+import lombok.experimental.Accessors;
+
 /**
  * @author: Jfeng
  * @date: 2019-06-18
  */
 @Data
-@AllArgsConstructor
 @Accessors(chain = true)
 public class SSRBean {
     private String server;
@@ -64,13 +63,58 @@ public class SSRBean {
         }
     }
 
+    public static void main(String[] args) {
+        // 184.170.208.44:16902:auth_aes128_sha1:chacha20:tls1.2_ticket_auth:MTk1MDQ5ODAwMA/?o
+        String str = "ssr" + "://MTg0LjE3MC4yMDguNDQ6MTY5MDI6YXV0aF9hZXMxMjhfc2hhMTpjaGFjaGEyMDp0bHMxLjJfdGlja2V0X2F1dGg6TVRrMU1EUTVPREF3TUEvP29";
+
+        System.out.println("===== ss ====");
+        SSRBean bean = new SSRBean();
+        String ss = "ss://YWVzLTI1Ni1jZmI6ZG9uZ3RhaXdhZ24uY29tQDE2Mi4yNDUuMjM5Ljc0OjM0NTY3";
+        bean.parseSSLink(ss);
+        System.out.println(bean);
+        System.out.println(bean.toSSLink());
+        System.out.println(bean.toSSLink().equals(ss));
+
+        System.out.println("===== ssr ====");
+        str = "ssr://NjQuMTM3LjIwMS4yNDY6Mjk4NzphdXRoX3NoYTFfdjQ6Y2hhY2hhMjA6dGxzMS4yX3RpY2tldF9hdXRoOlpHOTFZaTVwYnk5emMzcG9abmd2S21SdmRXSXVZbWxrTDNOemVtaG1lQzhxTWprNE53PT0vP3JlbWFya3M9Wm5KbFpRPT0=";
+        bean = new SSRBean();
+        bean.parseSSRLink(str);
+        System.out.println(bean);
+        System.out.println(bean.toSSRLink());
+        System.out.println(bean.toSSRLink().equals(str));
+
+    }
+
+    public static String join(String separator, Iterable<? extends CharSequence> elements) {
+        if (elements == null) {
+            return "";
+        }
+
+        StringJoiner joiner = new StringJoiner(separator);
+        elements.forEach(c -> {
+            if (c != null && c.length() > 0) {
+                joiner.add(c);
+            }
+        });
+
+        return joiner.toString();
+    }
+
+    public static String decodeBase64(String base64String) {
+        byte[] bytes = Base64Util.decode(base64String);
+        return new String(bytes);
+    }
+
+    public static String encodeBase64(String str) {
+        byte[] binaryData = str.getBytes();
+        return Base64Util.encode(binaryData);
+    }
+
     /**
      * ss://method:password@server:port
      *
      * ss://YWVzLTI1Ni1jZmI6ZG9uZ3RhaXdhZ24uY29tQDE2Mi4yNDUuMjM5Ljc0OjM0NTY3
      * aes-256-cfb:dongtaiwagn.com@162.245.239.74:34567
-     *
-     * @return
      */
     public String toSSLink() {
         List<String> list = new ArrayList<>();
@@ -123,8 +167,6 @@ public class SSRBean {
      *
      * 184.170.208.44:16902:auth_aes128_sha1:chacha20:tls1.2_ticket_auth:MTk1MDQ5ODAwMA/?o
      * server:port:protocol:method:obfs:MTk1MDQ5ODAwMA/?obfsparam=&protoparam=&remarks=&group=
-     *
-     * @return
      */
     public String toSSRLink() {
         if (StringUtil.isBlank(this.server)) {
@@ -147,8 +189,6 @@ public class SSRBean {
 
     /**
      * ssr://server:port:protocol:method:obfs:password_base64/?params_base64
-     *
-     * @param ssr
      */
     public void parseSSRLink(String ssr) {
         ssr = ssr.replace("ssr://", "").replace("–", "+").replace("_", "/");
@@ -174,57 +214,6 @@ public class SSRBean {
             }
             // @formatter:on
         }
-    }
-
-    public static void main(String[] args) {
-        // 184.170.208.44:16902:auth_aes128_sha1:chacha20:tls1.2_ticket_auth:MTk1MDQ5ODAwMA/?o
-        String str = "ssr" +
-                "://MTg0LjE3MC4yMDguNDQ6MTY5MDI6YXV0aF9hZXMxMjhfc2hhMTpjaGFjaGEyMDp0bHMxLjJfdGlja2V0X2F1dGg6TVRrMU1EUTVPREF3TUEvP29";
-
-        System.out.println("===== ss ====");
-        SSRBean bean = new SSRBean();
-        String ss = "ss://YWVzLTI1Ni1jZmI6ZG9uZ3RhaXdhZ24uY29tQDE2Mi4yNDUuMjM5Ljc0OjM0NTY3";
-        bean.parseSSLink(ss);
-        System.out.println(bean);
-        System.out.println(bean.toSSLink());
-        System.out.println(bean.toSSLink().equals(ss));
-
-        System.out.println("===== ssr ====");
-        str = "ssr://NjQuMTM3LjIwMS4yNDY6Mjk4NzphdXRoX3NoYTFfdjQ6Y2hhY2hhMjA6dGxzMS4yX3RpY2tldF9hdXRoOlpHOTFZaTVwYnk5emMzcG9abmd2S21SdmRXSXVZbWxrTDNOemVtaG1lQzhxTWprNE53PT0vP3JlbWFya3M9Wm5KbFpRPT0=";
-        bean = new SSRBean();
-        bean.parseSSRLink(str);
-        System.out.println(bean);
-        System.out.println(bean.toSSRLink());
-        System.out.println(bean.toSSRLink().equals(str));
-
-    }
-
-
-    public static String join(String separator, Iterable<? extends CharSequence> elements) {
-        if (elements == null) {
-            return "";
-        }
-
-        StringJoiner joiner = new StringJoiner(separator);
-        elements.forEach(c -> {
-            if (c != null && c.length() > 0) {
-                joiner.add(c);
-            }
-        });
-
-        return joiner.toString();
-    }
-
-
-
-    public static String decodeBase64(String base64String) {
-        byte[] bytes = Base64Util.decode(base64String);
-        return new String(bytes);
-    }
-
-    public static String encodeBase64(String str) {
-        byte[] binaryData = str.getBytes();
-        return Base64Util.encode(binaryData);
     }
 
     public String toString() {

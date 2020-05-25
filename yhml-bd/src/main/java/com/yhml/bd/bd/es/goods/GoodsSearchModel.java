@@ -1,17 +1,16 @@
 package com.yhml.bd.bd.es.goods;
 
 
+import com.yhml.bd.bd.es.annotation.ESField;
+import com.yhml.core.util.StringUtil;
+
 import java.util.*;
 
-import com.simple.common.es.annotation.ESField;
-import com.simple.common.es.model.FieldMapping;
-import com.simple.common.util.StringUtil;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-import static com.simple.common.es.model.FieldMapping.*;
 
 /**
  * 商品搜索索引模型
@@ -26,7 +25,7 @@ public class GoodsSearchModel {
     private String spuId;
     private String spuNo;
 
-    @ESField(type = text, analyzer = ik_max_word)
+    // @ESField(type = text, analyzer = ik_max_word)
     private String name;
 
     @ESField

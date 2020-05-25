@@ -1,7 +1,7 @@
-package com.yhml.ssr;
+package com.yhml.tools.ssr;
 
-import com.yhml.ssr.baidu.BaiduOcrResult;
-import com.yhml.ssr.baidu.WordsResult;
+import com.yhml.tools.ssr.baidu.BaiduOcrResult;
+import com.yhml.tools.ssr.baidu.WordsResult;
 
 import java.util.ArrayList;
 import java.util.List;

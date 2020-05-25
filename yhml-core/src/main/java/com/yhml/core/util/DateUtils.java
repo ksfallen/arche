@@ -15,7 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public abstract class DateUtils extends cn.hutool.core.date.DateUtil {
+public class DateUtils extends cn.hutool.core.date.DateUtil {
 
     public static final ZoneOffset GMT_8 = ZoneOffset.ofHours(8);
 

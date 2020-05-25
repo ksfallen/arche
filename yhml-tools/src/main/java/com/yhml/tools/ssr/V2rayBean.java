@@ -1,4 +1,4 @@
-package com.yhml.ssr;
+package com.yhml.tools.ssr;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +10,6 @@ import lombok.experimental.Accessors;
  * @date: 2019-06-18
  */
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
 @Accessors(chain = true)
 public class V2rayBean {

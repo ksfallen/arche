@@ -8,10 +8,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.util.CollectionUtils;
 
-import com.simple.common.base.bean.PageDTO;
-import com.simple.common.es.ESSearchApi;
-import com.simple.common.es.model.SearchQuery;
-import com.simple.common.util.JsonUtil;
+import com.yhml.bd.bd.es.ESSearchApi;
+import com.yhml.bd.bd.es.model.SearchQuery;
+import com.yhml.core.base.bean.PageDTO;
+import com.yhml.core.util.JsonUtil;
 
 import lombok.extern.slf4j.Slf4j;
 

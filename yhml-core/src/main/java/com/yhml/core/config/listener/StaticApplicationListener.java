@@ -1,12 +1,5 @@
 package com.yhml.core.config.listener;
 
-import java.lang.management.ManagementFactory;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.Set;
-
-import javax.management.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
@@ -19,6 +12,12 @@ import org.springframework.core.io.support.ResourcePropertySource;
 import org.springframework.web.context.support.StandardServletEnvironment;
 
 import lombok.extern.slf4j.Slf4j;
+
+import java.lang.management.ManagementFactory;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.Set;
+import javax.management.*;
 
 /**
  * @author: Jfeng

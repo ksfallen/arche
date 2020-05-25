@@ -1,15 +1,17 @@
 package com.yhml.bd.bd.es.model;
 
+import com.yhml.bd.bd.es.annotation.ESField;
+import com.yhml.bd.bd.es.goods.GoodsSearchModel;
+import com.yhml.core.util.BeanUtil;
+import com.yhml.core.util.StringUtil;
+
 import java.io.IOException;
 import java.lang.reflect.Field;
 
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.XContentFactory;
 
-import com.simple.common.es.annotation.ESField;
-import com.simple.common.es.goods.GoodsSearchModel;
-import com.simple.common.util.BeanUtil;
-import com.simple.common.util.StringUtil;
+
 
 /**
  * @author: Jfeng

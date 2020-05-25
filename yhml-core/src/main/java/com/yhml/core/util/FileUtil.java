@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
  * User: Jfeng Date: 2017/3/17
  */
 @Slf4j
-public class FileUtil {
+public class FileUtil  extends cn.hutool.core.io.FileUtil{
 
     private static String line_separator = System.getProperty("line.line_separator");
     private static String file_separator = File.separator;
@@ -51,24 +51,25 @@ public class FileUtil {
      * @return
      */
     public static File createDir(String dest) {
-        File dir = new File(dest);
-
-        if (dir.exists()) {
-            return dir;
-        }
-
-        if (!dest.endsWith(file_separator)) {// 结尾是否以"/"结束
-            dest = dest + file_separator;
-        }
-
-        // 创建目标目录
-        if (dir.mkdirs()) {
-            log.info("目录创建成功: ", dest);
-        } else {
-            log.info("目录创建失败: ", dest);
-        }
-
-        return dir;
+        return mkdir(dest);
+        // File dir = new File(dest);
+        //
+        // if (dir.exists()) {
+        //     return dir;
+        // }
+        //
+        // if (!dest.endsWith(file_separator)) {// 结尾是否以"/"结束
+        //     dest = dest + file_separator;
+        // }
+        //
+        // // 创建目标目录
+        // if (dir.mkdirs()) {
+        //     log.info("目录创建成功: ", dest);
+        // } else {
+        //     log.info("目录创建失败: ", dest);
+        // }
+        //
+        // return dir;
     }
 
 

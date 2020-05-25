@@ -1,6 +1,7 @@
 package com.yhml.bd.bd.es.goods;
 
-import com.simple.common.base.bean.BaseBean;
+
+import com.yhml.core.base.bean.BaseBean;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

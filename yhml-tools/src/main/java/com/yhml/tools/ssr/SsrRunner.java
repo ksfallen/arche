@@ -1,13 +1,13 @@
-package com.yhml.ssr;
+package com.yhml.tools.ssr;
 
-import com.yhml.ssr.baidu.BaiduOcrApi;
-import com.yhml.ssr.baidu.BaiduOcrResult;
+import com.yhml.tools.Tools;
+import com.yhml.tools.model.ToolRunner;
+import com.yhml.tools.ssr.baidu.BaiduOcrApi;
+import com.yhml.tools.ssr.baidu.BaiduOcrResult;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
-
-import lombok.ToString;
 
 import java.awt.*;
 import java.io.File;
@@ -23,8 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@ToString
-public class SSRRun {
+public class SsrRunner implements ToolRunner {
     private static final String ssr = "ssr";
     private static final String v2ary = "v2ary";
 
@@ -32,46 +31,23 @@ public class SSRRun {
     private String type = ssr;
     private boolean openLink = false;
 
-    public static void main(String[] args) throws Exception {
-        SSRRun run = new SSRRun();
-
+    public void exec(List<String> args) {
         // @formatter:off
-        for (int index = 0; index < args.length; index++) {
-            String value = args[index];
+        for (int index = 0; index < args.size(); index++) {
+            String value = args.get(index);
             switch (index) {
-                case 0: run.type = value; break;
-                case 1: run.openLink =  Boolean.parseBoolean(value); break;
-                case 2: run.output = value; break;
+                case 0: this.type = value; break;
+                case 1: this.openLink =  Boolean.parseBoolean(value); break;
+                case 2: this.output = value; break;
                 default:
             }
         }
         // @formatter:on
-        run.run();
-    }
-
-    private void run() throws Exception {
-        URL resource = SSRRun.class.getResource("");
-
-        if (resource != null) {
-            String path = resource.getPath().replace("file:", "");
-            path = path.substring(0, path.lastIndexOf("yhml-ssr"));
-
-            if (!resource.getPath().contains(".jar!")) {
-                path += "yhml-ssr";
-            }
-
-            this.output = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
-        }
-
-        System.out.println("[#] output: " + this.output);
-        System.out.println("[#] openLink: " + this.openLink);
-
-        if (ssr.contains(this.type)) {
-            ssr();
-        } else if (v2ary.contains(this.type)) {
-            v2ary();
-        } else {
-            System.out.println("类型参数错误");
+        try {
+            this.run();
+        } catch (Exception e) {
+            System.out.println("[#] srr run error: " + args);
+            e.printStackTrace();
         }
     }
 
@@ -100,6 +76,85 @@ public class SSRRun {
         return sb.toString();
     }
 
+    public static File download(File newFile, String urlStr) {
+        System.out.println("[#] 开始下载:" + urlStr);
+        HttpURLConnection httpUrlConnection = null;
+        InputStream fis = null;
+        FileOutputStream fos = null;
+        try {
+            httpUrlConnection = getHttpInputStream(urlStr);
+            fis = httpUrlConnection.getInputStream();
+            fos = new FileOutputStream(newFile);
+            byte[] temp = new byte[1024];
+            int b;
+            while ((b = fis.read(temp)) != -1) {
+                fos.write(temp, 0, b);
+                fos.flush();
+            }
+        } catch (Exception e) {
+            System.out.println("[#] image file 下载失败: " + urlStr);
+            e.printStackTrace();
+        } finally {
+            try {
+                if (fos != null) {
+                    fos.close();
+                }
+                if (fis != null) {
+                    fis.close();
+                }
+                if (httpUrlConnection != null) {
+                    httpUrlConnection.disconnect();
+                }
+            } catch (IOException ignored) {
+            }
+        }
+        System.out.println("[#] image file: " + newFile.getAbsolutePath());
+        return newFile;
+    }
+
+    private static HttpURLConnection getHttpInputStream(String urlStr) throws IOException {
+        HttpURLConnection httpUrlConnection = null;
+        URL url = new URL(urlStr);
+        httpUrlConnection = (HttpURLConnection) url.openConnection();
+        httpUrlConnection.setConnectTimeout(10 * 1000);
+        httpUrlConnection.setDoInput(true);
+        httpUrlConnection.setDoOutput(true);
+        httpUrlConnection.setUseCaches(false);
+        httpUrlConnection.setRequestMethod("GET");
+        httpUrlConnection.setRequestProperty("CHARSET", "UTF-8");
+        httpUrlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)"); // 服务器端禁止抓取
+        httpUrlConnection.connect();
+        return httpUrlConnection;
+    }
+
+    public void run() throws Exception {
+        URL resource = SsrRunner.class.getResource("");
+
+        if (resource != null) {
+            String path = resource.getPath().replace("file:", "");
+            if (path.contains(Tools.JAR_NAME)) {
+                path = path.substring(0, path.lastIndexOf(Tools.JAR_NAME));
+            }
+
+            if (!resource.getPath().contains(".jar!")) {
+                path += Tools.JAR_NAME;
+            }
+
+            this.output = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
+        }
+
+        System.out.println("[#] type: " + this.type);
+        System.out.println("[#] output: " + this.output);
+        System.out.println("[#] openLink: " + this.openLink);
+
+        if (ssr.contains(this.type)) {
+            ssr();
+        } else if (v2ary.contains(this.type)) {
+            v2ary();
+        } else {
+            System.out.println("ssr 类型错误");
+        }
+    }
 
     public void ssr() throws Exception {
         String url = "https://github.com/Alvin9999/new-pac/wiki/ss免费账号";
@@ -166,6 +221,7 @@ public class SSRRun {
             String method = elements.get(++i).text();
             String protocol = elements.get(++i).text();
             String obfs = elements.get(++i).text();
+
             SSRBean bean = new SSRBean();
             bean.setServer(server).setPort(getWord(port)).setPassword(getWord(passwd));
             bean.setMethod(getWord(method)).setProtocol(getWord(protocol)).setObfs(getWord(obfs));
@@ -236,57 +292,6 @@ public class SSRRun {
 
         BaiduOcrResult words = BaiduOcrApi.parse(imageFile.getAbsolutePath());
         return SSRUtil.parse2(words);
-    }
-
-    public static File download(File newFile, String urlStr) {
-        System.out.println("[#] 开始下载:" + urlStr);
-        HttpURLConnection httpUrlConnection = null;
-        InputStream fis = null;
-        FileOutputStream fos = null;
-        try {
-            httpUrlConnection = getHttpInputStream(urlStr);
-            fis = httpUrlConnection.getInputStream();
-            fos = new FileOutputStream(newFile);
-            byte[] temp = new byte[1024];
-            int b;
-            while ((b = fis.read(temp)) != -1) {
-                fos.write(temp, 0, b);
-                fos.flush();
-            }
-        } catch (Exception e) {
-            System.out.println("[#] image file 下载失败: " + urlStr);
-            e.printStackTrace();
-        } finally {
-            try {
-                if (fos != null) {
-                    fos.close();
-                }
-                if (fis != null) {
-                    fis.close();
-                }
-                if (httpUrlConnection != null) {
-                    httpUrlConnection.disconnect();
-                }
-            } catch (IOException ignored) {
-            }
-        }
-        System.out.println("[#] image file: " + newFile.getAbsolutePath());
-        return newFile;
-    }
-
-    private static HttpURLConnection getHttpInputStream(String urlStr) throws IOException {
-        HttpURLConnection httpUrlConnection = null;
-        URL url = new URL(urlStr);
-        httpUrlConnection = (HttpURLConnection) url.openConnection();
-        httpUrlConnection.setConnectTimeout(10 * 1000);
-        httpUrlConnection.setDoInput(true);
-        httpUrlConnection.setDoOutput(true);
-        httpUrlConnection.setUseCaches(false);
-        httpUrlConnection.setRequestMethod("GET");
-        httpUrlConnection.setRequestProperty("CHARSET", "UTF-8");
-        httpUrlConnection.setRequestProperty("User-Agent", "Mozilla/4.0 (compatible; MSIE 5.0; Windows NT; DigExt)"); // 服务器端禁止抓取
-        httpUrlConnection.connect();
-        return httpUrlConnection;
     }
 
 }

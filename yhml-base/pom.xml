@@ -28,7 +28,7 @@
         <baidu-aip.version>4.11.3</baidu-aip.version>
         <fastjson.version>1.2.60</fastjson.version>
         <guava.version>21.0</guava.version>
-        <hutool.version>4.5.15</hutool.version>
+        <hutool.version>5.3.5</hutool.version>
         <httpclinet.version>4.3.6</httpclinet.version>
         <javax.persistence.version>1.0</javax.persistence.version>
         <hikaricp.version>3.1.0</hikaricp.version>

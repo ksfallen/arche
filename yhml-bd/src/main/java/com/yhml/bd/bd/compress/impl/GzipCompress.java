@@ -1,17 +1,18 @@
 package com.yhml.bd.bd.compress.impl;
 
+import com.yhml.bd.bd.compress.Compress;
+import com.yhml.bd.bd.compress.support.SPI;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import com.simple.common.compress.Compress;
-import com.simple.common.compress.support.SPI;
 
 /**
  * The Data Compression Based on gzip.
- * 
+ *
  * @author lry
  */
 @SPI("gzip")

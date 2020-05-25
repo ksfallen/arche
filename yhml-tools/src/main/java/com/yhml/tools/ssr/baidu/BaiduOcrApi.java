@@ -1,4 +1,4 @@
-package com.yhml.ssr.baidu;
+package com.yhml.tools.ssr.baidu;
 
 import com.alibaba.fastjson.JSON;
 import com.baidu.aip.client.BaseClient;

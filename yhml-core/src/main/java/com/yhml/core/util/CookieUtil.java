@@ -23,8 +23,6 @@ import com.yhml.core.crypt.MD5Util;
 /**
  * 功能说明: cookie读写工具类<br>
  * 系统版本: v1.0<br>
- * 开发人员: @author yejg<br>
- * 开发时间: 2015年7月25日<br>
  */
 public class CookieUtil {
     private static final Logger logger = LoggerFactory.getLogger(CookieUtil.class);
