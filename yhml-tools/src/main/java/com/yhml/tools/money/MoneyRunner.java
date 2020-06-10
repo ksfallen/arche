@@ -32,9 +32,12 @@ public class MoneyRunner implements ToolRunner {
 
     private static File getMoneyProFile() {
         File[] files = FileUtil.ls(path);
-        Optional<File> op = Arrays.stream(files).filter(file -> FileUtil.mainName(file).contains("Money Pro") && FileUtil.extName(file).equals("csv"
-        )).findFirst();
-        return op.orElse(null);
+        Optional<File> op = Arrays.stream(files)
+                .filter(file -> FileUtil.mainName(file).contains("Money Pro") && FileUtil.extName(file).equals("csv"))
+                .findFirst();
+        File file = op.orElse(null);
+        Assert.notNull(file, "MoneyPro csv file not found");
+        return file;
     }
 
     @Override
@@ -53,12 +56,43 @@ public class MoneyRunner implements ToolRunner {
         }
     }
 
+    /**
+     * moneyPro 交易记录导入 moneyWiz
+     */
     @Test
     public void pro2Wiz() {
         File file = getMoneyProFile();
         List<MoneyWiz> list = parseMoneyPro(file);
         writer(list, "MoneyWiz.csv");
-        log.info("MoneyWiz.csv 总记录数:{}", list.size());
+        log.info("导入 MoneyWiz CSV 总记录数:{}", list.size());
+    }
+
+    /**
+     * 分账户导入
+     * moneyPro 交易记录导入 moneyWiz
+     */
+    @Test
+    public void pro2WizForEach() {
+        File file = getMoneyProFile();
+        List<MoneyWiz> list = parseMoneyPro(file);
+        Map<String, List<MoneyWiz>> map = new LinkedHashMap<>();
+
+        for (MoneyWiz moneyWizBean : list) {
+            String account = moneyWizBean.getAccount();
+            if (!map.containsKey(account)) {
+                map.put(account, new ArrayList<>());
+            }
+            List<MoneyWiz> moneyWizBeans = map.get(account);
+            moneyWizBeans.add(moneyWizBean);
+        }
+
+        for (Map.Entry<String, List<MoneyWiz>> entry : map.entrySet()) {
+            String fileName = "MoneyWiz-" + entry.getKey() + ".csv";
+            writer(entry.getValue(), fileName);
+        }
+
+        log.info("moneywiz.csv 总记录数:{}", list.size());
+        Assert.isTrue(list.size() == totalSize);
     }
 
     @Test
@@ -114,6 +148,7 @@ public class MoneyRunner implements ToolRunner {
             result.add(bean);
 
             for (int i = 0; i < csvRow.getRawList().size(); i++) {
+                // Alias 注解的名字
                 String fieldName = header.get(i);
                 String value = csvRow.getRawList().get(i);
 
@@ -121,6 +156,7 @@ public class MoneyRunner implements ToolRunner {
                     continue;
                 }
 
+                // 使用 Alias 注解的名字 代替 fieldName
                 Field field = ReflectUtil.getField(clazz, fieldName);
 
                 if (field == null) {
@@ -134,29 +170,6 @@ public class MoneyRunner implements ToolRunner {
         return result;
     }
 
-    @Test
-    public void pro2WizForEach() {
-        File file = getMoneyProFile();
-        List<MoneyWiz> list = parseMoneyPro(file);
-        Map<String, List<MoneyWiz>> map = new LinkedHashMap<>();
-
-        for (MoneyWiz moneyWizBean : list) {
-            String account = moneyWizBean.getAccount();
-            if (!map.containsKey(account)) {
-                map.put(account, new ArrayList<>());
-            }
-            List<MoneyWiz> moneyWizBeans = map.get(account);
-            moneyWizBeans.add(moneyWizBean);
-        }
-
-        for (Map.Entry<String, List<MoneyWiz>> entry : map.entrySet()) {
-            String fileName = "MoneyWiz-" + entry.getKey() + ".csv";
-            writer(entry.getValue(), fileName);
-        }
-
-        log.info("moneywiz.csv 总记录数:{}", list.size());
-        Assert.isTrue(list.size() == totalSize);
-    }
 
     // /**
     //  * 支付宝账单转MoneyPro

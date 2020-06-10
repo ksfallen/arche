@@ -69,7 +69,7 @@ public class MoneyWiz extends CsvModel {
         if (copy.isTransfer()) {
             bean.setTransfer(copy.getTransfer());
             bean.setCharge(copy.getCharge());
-            String desc = StrUtil.format("{} 转入 {} ({})", copy.getAccount(), copy.getTransfer(), copy.getDesc());
+            String desc = StrUtil.format("{}转入{} ({})", copy.getAccount(), copy.getTransfer(), copy.getDesc());
             bean.setDesc(desc);
         }
 

@@ -13,11 +13,9 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public enum ToolEnum {
-    ssr("ssr", SsrRunner.class),
-    money("money", MoneyRunner.class),
+    ssr(SsrRunner.class), money(MoneyRunner.class),
 
     ;
-    private String key;
     private Class type;
 
 }
