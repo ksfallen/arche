@@ -23,6 +23,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class SsrRunner implements ToolRunner {
     private static final String ssr = "ssr";
     private static final String v2ary = "v2ary";
@@ -31,28 +34,12 @@ public class SsrRunner implements ToolRunner {
     private String type = ssr;
     private boolean openLink = false;
 
-    public void exec(List<String> args) {
-        // @formatter:off
-        for (int index = 0; index < args.size(); index++) {
-            String value = args.get(index);
-            switch (index) {
-                case 0: this.type = value; break;
-                case 1: this.openLink =  Boolean.parseBoolean(value); break;
-                case 2: this.output = value; break;
-                default:
-            }
-        }
-        // @formatter:on
-        try {
-            this.run();
-        } catch (Exception e) {
-            System.out.println("[#] srr run error: " + args);
-            e.printStackTrace();
-        }
-    }
-
     private static String getWord(String value) {
-        String[] split = value.replace("：", ":").split(":");
+        String replace = value.replace("：", ":");
+        if (!replace.contains(":")) {
+            return "";
+        }
+        String[] split = replace.split(":");
         return split.length == 1 ? split[0].toLowerCase().trim() : split[1].toLowerCase().trim();
     }
 
@@ -76,7 +63,7 @@ public class SsrRunner implements ToolRunner {
         return sb.toString();
     }
 
-    public static File download(File newFile, String urlStr) {
+    private static File download(File newFile, String urlStr) {
         System.out.println("[#] 开始下载:" + urlStr);
         HttpURLConnection httpUrlConnection = null;
         InputStream fis = null;
@@ -127,6 +114,25 @@ public class SsrRunner implements ToolRunner {
         return httpUrlConnection;
     }
 
+    public void exec(List<String> args) {
+        // @formatter:off
+        for (int index = 0; index < args.size(); index++) {
+            String value = args.get(index);
+            switch (index) {
+                case 0: this.type = value; break;
+                case 1: this.openLink =  Boolean.parseBoolean(value); break;
+                case 2: this.output = value; break;
+                default:
+            }
+        }
+        // @formatter:on
+        try {
+            this.run();
+        } catch (Exception e) {
+            log.error("srr run error: {}", args, e);
+        }
+    }
+
     public void run() throws Exception {
         URL resource = SsrRunner.class.getResource("");
 
@@ -143,9 +149,9 @@ public class SsrRunner implements ToolRunner {
             this.output = path.endsWith("/") ? path.substring(0, path.length() - 1) : path;
         }
 
-        System.out.println("[#] type: " + this.type);
-        System.out.println("[#] output: " + this.output);
-        System.out.println("[#] openLink: " + this.openLink);
+        System.out.println("[#] 账号类型: " + this.type);
+        // System.out.println("[#] 图片保存路径: " + this.output);
+        System.out.println("[#] 是否打开链接: " + this.openLink);
 
         if (ssr.contains(this.type)) {
             ssr();
@@ -171,7 +177,7 @@ public class SsrRunner implements ToolRunner {
 
         System.out.println("\n============");
         for (SSRBean ssr : list) {
-            System.out.println(ssr.toSSRLink());
+            System.out.println(ssr.toSSRLink() + "\n");
             if (openLink) {
                 try {
                     Desktop.getDesktop().browse(new URI(ssr.toSSRLink()));
@@ -214,7 +220,7 @@ public class SsrRunner implements ToolRunner {
             if (!matcher.find()) {
                 continue;
             }
-
+            int temp = i - 1;
             String server = matcher.group();
             String port = elements.get(++i).text();
             String passwd = elements.get(++i).text();
@@ -223,11 +229,13 @@ public class SsrRunner implements ToolRunner {
             String obfs = elements.get(++i).text();
 
             SSRBean bean = new SSRBean();
-            bean.setServer(server).setPort(getWord(port)).setPassword(getWord(passwd));
-            bean.setMethod(getWord(method)).setProtocol(getWord(protocol)).setObfs(getWord(obfs));
-
-            System.out.println("\n" + bean);
+            bean.setServer(server).setPort(getWord(port)).setPassword(getWord(passwd)).setMethod(getWord(method));
+            bean.setProtocol(getWord(protocol));
+            bean.setObfs(obfs.contains("混淆") ? getWord(obfs) : "");
             list.add(bean);
+
+            System.out.println("\n" + elements.get(temp).text());
+            System.out.println(bean);
         }
         return list;
     }

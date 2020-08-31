@@ -2,8 +2,6 @@ package com.yhml.tools.ssr.baidu;
 
 import java.util.List;
 
-import com.alibaba.fastjson.annotation.JSONField;
-
 import lombok.Data;
 
 /**
@@ -12,7 +10,7 @@ import lombok.Data;
  */
 @Data
 public class BaiduOcrResult {
-    @JSONField(name = "words_result")
+    // @JSONField(name = "words_result")
     private List<WordsResult> wordsResult;
 }
 

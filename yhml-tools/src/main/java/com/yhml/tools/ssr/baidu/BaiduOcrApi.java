@@ -1,11 +1,11 @@
 package com.yhml.tools.ssr.baidu;
 
-import com.alibaba.fastjson.JSON;
 import com.baidu.aip.client.BaseClient;
 import com.baidu.aip.ocr.AipOcr;
 import org.apache.log4j.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
+import cn.hutool.json.JSONUtil;
 
 import java.util.HashMap;
 
@@ -62,7 +62,7 @@ public class BaiduOcrApi {
 
     public static BaiduOcrResult parse(String path) {
         String text = parse(path, null);
-        return JSON.parseObject(text, BaiduOcrResult.class);
+        return JSONUtil.toBean(text, BaiduOcrResult.class);
     }
 
 }

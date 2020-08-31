@@ -1,12 +1,12 @@
 package com.yhml.tools.ssr;
 
+import com.baidu.aip.util.Base64Util;
+import org.jsoup.internal.StringUtil;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
-
-import com.baidu.aip.util.Base64Util;
-import org.jsoup.helper.StringUtil;
 
 import lombok.Data;
 import lombok.experimental.Accessors;
