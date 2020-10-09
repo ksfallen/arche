@@ -1,12 +1,11 @@
 package com.yhml.core.config.mvc.interceptor;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.yhml.core.util.RequestUtil;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import com.yhml.core.util.RequestUtil;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,13 +22,8 @@ public class LoggerInterceptor extends HandlerInterceptorAdapter {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         if (request.getRequestURI() != null && handler instanceof HandlerMethod) {
-
-            log.info("req -> host:{} prot:{} sessionid:{}, url:{}, {}",
-                    request.getRemoteHost(),
-                    request.getRemotePort(),
-                    request.getRequestedSessionId(),
-                    request.getRequestURI(),
-                    RequestUtil.getParams(request));
+            log.info("req -> host:{} prot:{} sessionid:{}, url:{}, {}", request.getRemoteHost(), request.getRemotePort(),
+                    request.getRequestedSessionId(), request.getRequestURI(), RequestUtil.getParams(request));
         }
 
         return true;

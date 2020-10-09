@@ -21,11 +21,11 @@ import static java.util.stream.Collectors.toList;
  * @date 2020/5/19
  */
 @Getter
-public class CsvModel<T> {
+public class CsvModel {
 
     public String[] toHeader() {
         Field[] fields = getClass().getDeclaredFields();
-        List<String> collect = Arrays.stream(fields).map(field -> {
+        List<String> collect = Arrays.stream(fields).filter(field -> field.isAnnotationPresent(Alias.class)).map(field -> {
             Alias alias = field.getAnnotation(Alias.class);
             return alias == null ? field.getName() : alias.value();
         }).collect(toList());
@@ -35,7 +35,7 @@ public class CsvModel<T> {
 
     public String toCsvData() {
         Field[] fields = getClass().getDeclaredFields();
-        List<String> collect = Arrays.stream(fields).map(field -> {
+        List<String> collect = Arrays.stream(fields).filter(field -> field.isAnnotationPresent(Alias.class)).map(field -> {
             Object value = ReflectUtil.getFieldValue(this, field);
             return value == null ? "" : String.valueOf(value);
         }).collect(toList());

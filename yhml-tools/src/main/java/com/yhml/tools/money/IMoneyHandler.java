@@ -10,5 +10,5 @@ public interface IMoneyHandler {
     String HANDLER_WIZ = "wiz";
     String HANDLER_ALIPAY = "alipay";
 
-    void porcess();
+    void process();
 }

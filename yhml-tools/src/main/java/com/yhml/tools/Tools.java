@@ -24,8 +24,7 @@ public class Tools {
 
     @Test
     public void test() {
-        // String[] args = {ToolEnum.money.name()};
-        String[] args = {ToolEnum.ssr.name()};
+        String[] args = {ToolEnum.money.name()};
         Tools.main(args);
     }
 

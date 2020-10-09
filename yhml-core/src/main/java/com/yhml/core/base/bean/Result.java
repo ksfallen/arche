@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.yhml.core.base.ErrorMessge;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -14,9 +15,9 @@ import lombok.Setter;
 @Setter
 @Getter
 @Builder
+@AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Result<T> extends BaseBean {
-
     public static final String SUCCESS = "success";
     public static final String ERROR = "error";
     public static final String OK = "ok";
@@ -28,6 +29,16 @@ public class Result<T> extends BaseBean {
     private String extMsg;
 
     private T data;
+
+    public Result(String code, String msg) {
+        this.code = code;
+        this.msg = msg;
+    }
+
+    public Result(String msg) {
+        this.code = ErrorMessge.ERROR_SYS.getCode();
+        this.msg = msg;
+    }
 
     @JsonIgnore
     @JSONField(serialize = false)
@@ -45,6 +56,14 @@ public class Result<T> extends BaseBean {
 
     public static Result error() {
         return createBuilder(ErrorMessge.ERROR_SYS).build();
+    }
+
+    public static Result error(ErrorMessge errorMessge) {
+        return createBuilder(errorMessge).build();
+    }
+
+    public static Result error(String code, String msg) {
+        return new Result(code, msg);
     }
 
     public static ResultBuilder<Object> createBuilder(ErrorMessge messge) {

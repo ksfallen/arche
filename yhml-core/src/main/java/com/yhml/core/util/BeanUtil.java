@@ -224,8 +224,8 @@ public class BeanUtil extends BeanUtils {
     }
 
     private static <T> T copyWithJson(Object source, Class<T> clazz) {
-        String json = JsonUtil.toJsonString(source);
-        return JsonUtil.parseObject(json, clazz);
+        String json = JsonUtil.toJson(source);
+        return JsonUtil.parse(json, clazz);
     }
 
     private static String[] getNullPropertyNames(Object source) {

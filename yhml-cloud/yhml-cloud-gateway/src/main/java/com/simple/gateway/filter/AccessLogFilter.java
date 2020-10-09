@@ -1,18 +1,16 @@
 package com.simple.gateway.filter;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.zip.GZIPInputStream;
-
-import javax.servlet.http.HttpServletRequest;
-
-import org.apache.commons.io.IOUtils;
-import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
-
 import com.google.common.base.Charsets;
 import com.netflix.zuul.ZuulFilter;
 import com.netflix.zuul.context.RequestContext;
 import com.yhml.core.util.RequestUtil;
+import org.apache.commons.io.IOUtils;
+import org.springframework.cloud.netflix.zuul.filters.support.FilterConstants;
+
+import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.zip.GZIPInputStream;
 
 import lombok.extern.slf4j.Slf4j;
 

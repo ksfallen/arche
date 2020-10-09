@@ -1,4 +1,4 @@
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
 
 /**
  * @author: Jfeng
@@ -21,8 +21,4 @@ public class Base64Util {
         byte[] bytes = org.apache.commons.codec.binary.Base64.encodeBase64(binaryData);
         return new String(bytes);
     }
-
-    // public static String en(String text) {
-        // return URLEncoder.createDefault().encode()
-    // }
 }

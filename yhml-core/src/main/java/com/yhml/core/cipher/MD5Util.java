@@ -1,8 +1,9 @@
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
+
+import org.apache.commons.codec.digest.Md5Crypt;
+import org.apache.commons.io.Charsets;
 
 import java.io.UnsupportedEncodingException;
-
-import org.apache.commons.io.Charsets;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,20 +30,13 @@ public class MD5Util {
         return "";
     }
 
-    // private static String encrypt(byte[] data) {
-
-    // StringBuilder sb = new StringBuilder();
-    // // byte2hex
-    // for (int i = 0; i < bytes.length; i++) {
-    //     String hex = Integer.toHexString(bytes[i] & 0xff);
-    //     if (hex.length() == 1) {
-    //         sb.append("0");
-    //     }
-    //     sb.append(hex);
-    // }
-    //
-    // return sb.toString();
-    // }
-
+    public static String encodeWithSalt(String str, String salt) {
+        try {
+            return  Md5Crypt.md5Crypt(str.getBytes(Charsets.UTF_8), salt);
+        } catch (Exception e) {
+            log.error("Unsupported EncodingException.", e);
+        }
+        return "";
+    }
 
 }

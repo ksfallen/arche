@@ -1,12 +1,15 @@
 package com.yhml.core.util;
 
-import java.util.*;
-import java.util.regex.Matcher;
-
 import org.apache.commons.lang3.StringUtils;
-
 import cn.hutool.core.collection.CollectionUtil;
 import cn.hutool.core.util.StrUtil;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.StringJoiner;
+import java.util.regex.Matcher;
+
 import lombok.extern.slf4j.Slf4j;
 
 import static com.yhml.core.util.ValidateUtil.underline;
@@ -141,6 +144,11 @@ public class StringUtil extends StringUtils {
         return CollectionUtil.toList(str);
     }
 
+    /**
+     * 默认分隔符
+     * @param elements
+     * @return
+     */
     public static String join(Iterable<? extends CharSequence> elements) {
         return join(DEFAULT_JOIN_SEPARATOR, elements);
     }

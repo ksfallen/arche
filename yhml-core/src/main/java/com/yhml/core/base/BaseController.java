@@ -1,20 +1,19 @@
 package com.yhml.core.base;
 
-import javax.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  *
  * @author Jfeng
  * @date 2017/10/11
  */
-@CrossOrigin(allowCredentials = "true")
+// @CrossOrigin(allowCredentials = "true")
 public class BaseController {
     protected Logger log = LoggerFactory.getLogger(getClass());
 

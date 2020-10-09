@@ -1,4 +1,4 @@
-package com.yhml.cache.annotaton;
+package com.yhml.core.annotaton;
 
 import java.lang.annotation.*;
 
@@ -9,5 +9,6 @@ import java.lang.annotation.*;
 @Target({ElementType.METHOD, ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Token {
+public @interface Log {
+    String value() default "";
 }

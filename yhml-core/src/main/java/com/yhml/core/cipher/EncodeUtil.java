@@ -1,20 +1,20 @@
-package com.yhml.core.crypt;
-
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+package com.yhml.core.cipher;
 
 import org.apache.commons.codec.DecoderException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.text.StringEscapeUtils;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+
 /**
  * 各种格式的编码加码工具类.
- * 
+ *
  * 集成Commons-Codec,Commons-Lang及JDK提供的编解码方法.
- * 
+ *
  */
 public class EncodeUtil {
 

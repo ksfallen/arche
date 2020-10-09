@@ -1,10 +1,10 @@
-package com.yhml.core.config.advice;
+package com.yhml.core.config;
 
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
-
+import com.yhml.core.base.ErrorMessge;
+import com.yhml.core.base.bean.Result;
+import com.yhml.core.exception.AuthException;
+import com.yhml.core.exception.BaseException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.MessageSource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,13 +12,13 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
-import com.yhml.core.base.BaseException;
-import com.yhml.core.base.ErrorMessge;
-import com.yhml.core.base.bean.Result;
+import javax.servlet.http.HttpServletRequest;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -29,15 +29,16 @@ import static com.yhml.core.base.ErrorMessge.ERROR_SYS;
  * 默认异常处理类
  */
 @Slf4j
+@RestControllerAdvice
 public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
 
-    @Resource
-    protected MessageSource messageSource;
+    // @Resource
+    // protected MessageSource messageSource;
 
     @Autowired
     protected HttpServletRequest request;
 
-
+    // @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({BindException.class, MethodArgumentNotValidException.class})
     public Result handleBindException(BindException e, MethodArgumentNotValidException ex) {
         log.error("handleBindException", e);
@@ -68,6 +69,13 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
         return msg;
     }
 
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    @ExceptionHandler({AuthException.class})
+    public Result handleAuthException(AuthException e) {
+        log.error("handleAuthException URI:{}", request.getRequestURI(), e);
+        return Result.error(e.getCode(), e.getMessage());
+    }
+
     @ExceptionHandler({Exception.class})
     public Result handleException(Exception e) {
         log.error("handleException URI:{}", request.getRequestURI(), e);
@@ -90,8 +98,7 @@ public class DefaultExceptionHandler extends ResponseEntityExceptionHandler {
     protected void customHandleException(Exception ex, Result.ResultBuilder builder) {
     }
 
-    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status,
-                                                             WebRequest request) {
+    protected ResponseEntity<Object> handleExceptionInternal(Exception ex, Object body, HttpHeaders headers, HttpStatus status, WebRequest request) {
         log.error("handleException {}", request);
 
         Result.ResultBuilder builder = Result.builder().code(String.valueOf(status.value())).msg(ex.getMessage());

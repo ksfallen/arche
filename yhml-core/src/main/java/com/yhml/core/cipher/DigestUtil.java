@@ -3,7 +3,9 @@
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  */
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
+
+import org.apache.commons.lang3.Validate;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,7 +14,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
-import org.apache.commons.lang3.Validate;
+import static org.apache.commons.codec.digest.MessageDigestAlgorithms.*;
 
 
 /**
@@ -22,8 +24,6 @@ import org.apache.commons.lang3.Validate;
  */
 public class DigestUtil {
 
-    public static final String SHA1 = "SHA-1";
-    public static final String MD5 = "MD5";
 
     private static SecureRandom random = new SecureRandom();
 
@@ -31,19 +31,19 @@ public class DigestUtil {
      * 对输入字符串进行sha1散列.
      */
     public static byte[] sha1(byte[] input) {
-        return digest(input, SHA1, null, 1);
+        return digest(input, SHA_1, null, 1);
     }
 
     public static byte[] sha1(byte[] input, byte[] salt) {
-        return digest(input, SHA1, salt, 1);
+        return digest(input, SHA_1, salt, 1);
     }
 
     public static byte[] sha1(byte[] input, byte[] salt, int iterations) {
-        return digest(input, SHA1, salt, iterations);
+        return digest(input, SHA_1, salt, iterations);
     }
 
     public static byte[] md5(byte[] input) {
-        return digest(input, SHA1, null, 1);
+        return digest(input, SHA_1, null, 1);
     }
 
     /**
@@ -55,7 +55,7 @@ public class DigestUtil {
      * @param iterations 迭代哈希次数
      * @return
      */
-    private static byte[] digest(byte[] input, String algorithm, byte[] salt, int iterations) {
+    public static byte[] digest(byte[] input, String algorithm, byte[] salt, int iterations) {
         byte[] result = null;
         try {
             MessageDigest digest = MessageDigest.getInstance(algorithm);
@@ -63,6 +63,23 @@ public class DigestUtil {
             if (salt != null) {
                 digest.update(salt);
             }
+
+            result = digest.digest(input);
+
+            for (int i = 1; i < iterations; i++) {
+                digest.reset();
+                result = digest.digest(result);
+            }
+        } catch (NoSuchAlgorithmException ignored) {
+        }
+
+        return result;
+    }
+
+    public static byte[] digest(byte[] input, String algorithm, int iterations) {
+        byte[] result = null;
+        try {
+            MessageDigest digest = MessageDigest.getInstance(algorithm);
 
             result = digest.digest(input);
 
@@ -100,7 +117,7 @@ public class DigestUtil {
      * 对文件进行sha1散列.
      */
     public static byte[] sha1(InputStream input) throws IOException {
-        return digest(input, SHA1);
+        return digest(input, SHA_1);
     }
 
     private static byte[] digest(InputStream input, String algorithm) throws IOException {

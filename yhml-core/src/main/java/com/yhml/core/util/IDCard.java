@@ -1,15 +1,13 @@
 package com.yhml.core.util;
 
+import com.google.common.collect.Lists;
+import org.apache.commons.lang3.math.NumberUtils;
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.util.ReUtil;
+
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-
-import org.apache.commons.lang3.math.NumberUtils;
-
-import com.google.common.collect.Lists;
-
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.util.ReUtil;
 
 /**
  *
@@ -28,7 +26,7 @@ public class IDCard {
     /**
      * 身份证的最小出生日期,1900年1月1日
      */
-    private final static Date MINIMAL_BIRTH_DATE = DateUtils.parseDate("1900-01-01");
+    private final static Date MINIMAL_BIRTH_DATE = DateUtils.parse("1900-01-01");
     /**
      * 18位长
      */
@@ -147,7 +145,7 @@ public class IDCard {
         }
 
         String substring = idcard.substring(6, 14);
-        Date date = DateUtils.parseText(substring, DatePattern.PURE_DATE_PATTERN);
+        Date date = DateUtils.parse(substring, DatePattern.PURE_DATE_PATTERN);
         return DateUtils.isIdDate(substring) && MINIMAL_BIRTH_DATE.before(date);
     }
 

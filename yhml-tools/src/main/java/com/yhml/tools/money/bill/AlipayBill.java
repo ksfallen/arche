@@ -1,8 +1,8 @@
 package com.yhml.tools.money.bill;
 
+import com.yhml.tools.constants.TradeTypeEnum;
 import com.yhml.tools.model.CsvModel;
 import cn.hutool.core.annotation.Alias;
-import cn.hutool.core.util.StrUtil;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -52,10 +52,24 @@ public class AlipayBill extends CsvModel {
      * 是否基金产品
      */
     public boolean isFund() {
-        return StrUtil.contains(productName, "蚂蚁财富");
+        return productName.contains("蚂蚁财富");
     }
 
     public boolean isYueBao() {
         return productName.matches("余额宝-.*-收益发放");
+    }
+
+    /**
+     * 自动还款-花呗
+     */
+    public boolean isHuaBei() {
+        return productName.matches("自动还款-花呗.*账单");
+    }
+
+    /**
+     * 卡转移余额宝
+     */
+    public boolean IsFundsTransfer() {
+        return productName.matches("余额宝-单次转入") && TradeTypeEnum.FUNDS_TRANSFER.equals(tradeType);
     }
 }

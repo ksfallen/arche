@@ -54,7 +54,7 @@ public class RedisCacheAspect {
         }
 
         ret = pjp.proceed();
-        redisTemplate.opsForValue().set(key, JsonUtil.toJsonString(ret), redisCache.expire(), redisCache.timeUnit());
+        redisTemplate.opsForValue().set(key, JsonUtil.toJson(ret), redisCache.expire(), redisCache.timeUnit());
 
         return ret;
     }

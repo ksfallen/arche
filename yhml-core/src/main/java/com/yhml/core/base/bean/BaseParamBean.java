@@ -1,14 +1,12 @@
 package com.yhml.core.base.bean;
 
-import java.util.Date;
+import com.alibaba.fastjson.annotation.JSONField;
+import org.hibernate.validator.constraints.Range;
 
 import javax.persistence.Transient;
 import javax.validation.constraints.Max;
 import javax.validation.constraints.Min;
-
-import org.hibernate.validator.constraints.Range;
-
-import com.alibaba.fastjson.annotation.JSONField;
+import java.util.Date;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -48,7 +46,7 @@ public class BaseParamBean extends BaseBean {
     @Transient
     @JSONField(serialize = false)
     @Min(1)
-    private Integer pageNum;
+    private Integer pageNum = 1;
 
     /** 排序 */
     @Transient

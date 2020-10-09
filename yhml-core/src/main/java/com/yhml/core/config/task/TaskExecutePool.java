@@ -1,10 +1,6 @@
 package com.yhml.core.config.task;
 
 
-import java.lang.reflect.Method;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ThreadPoolExecutor;
-
 import org.springframework.aop.interceptor.AsyncUncaughtExceptionHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -13,19 +9,24 @@ import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Method;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ThreadPoolExecutor;
+
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @EnableAsync
 @Component
 public class TaskExecutePool implements AsyncConfigurer {
-    public static final Integer asyncrRetryTimes=4;
+    public static final Integer asyncrRetryTimes = 4;
 
     @Autowired
     TaskThreadPoolConfig config;
 
+
     @Bean
-    public Executor getAsyncExecutor() {
+    public Executor getAsyncExecutor(@Autowired TaskThreadPoolConfig config) {
         ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
         executor.setCorePoolSize(config.getCorePoolSize());
         executor.setMaxPoolSize(config.getMaxPoolSize());

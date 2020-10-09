@@ -1,5 +1,6 @@
 package com.yhml.core.base;
 
+import com.yhml.core.util.BeanUtil;
 import org.apache.commons.codec.CharEncoding;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
@@ -7,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -14,25 +16,24 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.util.MultiValueMap;
 
-import com.yhml.core.util.BeanUtil;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 
-// @formatter:off
 /**
  * @author: Jianfeng.Hu
  * @date: 2017/9/21
  */
 @RunWith(SpringRunner.class)
-@SpringBootTest
-// @ComponentScan(value="com.yhml")
 @AutoConfigureMockMvc
-public class AbstractApplicationTest {
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+public class BaseTest {
 
     protected Logger log = LoggerFactory.getLogger(getClass());
 
     @Autowired
     protected MockMvc mvc;
+
+    @Autowired
+    protected TestRestTemplate restTemplate;
 
     public String httpGet(String url) {
         return httpGet(url, null);

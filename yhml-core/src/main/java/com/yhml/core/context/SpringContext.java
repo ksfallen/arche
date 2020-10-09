@@ -1,17 +1,27 @@
 package com.yhml.core.context;
 
-import java.util.*;
-
+import com.yhml.core.annotaton.ServiceSelector;
+import com.yhml.core.util.StringUtil;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.OrderComparator;
 import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.support.GenericWebApplicationContext;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.handler.AbstractHandlerMethodMapping;
 import org.springframework.web.servlet.mvc.method.RequestMappingInfo;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+import cn.hutool.core.collection.CollectionUtil;
+import cn.hutool.core.util.ArrayUtil;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -19,82 +29,73 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 public class SpringContext implements ApplicationContextAware {
 
-    private static ApplicationContext appContext = null;
-
-    static {
-        // 设置XServer模式, 该模式下，系统缺少了显示设备、键盘或鼠标
-        System.setProperty("java.awt.headless", "true");
-    }
+    private static ApplicationContext applicationContext;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        appContext = applicationContext;
+        SpringContext.applicationContext = applicationContext;
         log.info(">>>>>>>>>>>>>>> {} load success", this.getClass().getName());
 
-        // 缓存 某个类的 实现类
-        // Map<String, Diversion> map = applicationContext.getBeansOfType(Diversion.class);
-        // for (Diversion diversionModule : map.values()) {
-        //     DiversionFactory.put(diversionModule.getDivtype(), diversionModule);
-        // }
+        //  缓存 ServiceSelector 注解的Bean
+        Map<String, Object> map = applicationContext.getBeansWithAnnotation(ServiceSelector.class);
+        for (Map.Entry<String, Object> entry : map.entrySet()) {
+            ServiceSelector selector = entry.getValue().getClass().getAnnotation(ServiceSelector.class);
+            if (selector == null && StringUtil.isBlank(selector.key())) {
+                continue;
+            }
+            SimpleServiceHandler.addBean(selector.key() + selector.subKey(), entry.getValue());
+        }
     }
 
     /**
      * 获取 applicationContext
      */
-    public static ApplicationContext getAppContext() {
-        return appContext;
+    public static ApplicationContext getApplicationContext() {
+        return applicationContext;
     }
 
     public static boolean containsBean(String beanName) {
-        return appContext != null && appContext.containsBean(beanName);
+        return applicationContext.containsBean(beanName);
     }
 
     public static Object getBean(String beanName) {
-        return appContext != null ? appContext.getBean(beanName) : null;
+        return applicationContext.getBean(beanName);
     }
 
-    public static List<String> getBeanNamesForAnnotation(Class annotation) {
-        String[] ss = appContext.getBeanNamesForAnnotation(annotation);
-        return Arrays.asList(ss);
-    }
 
     public static <T> T getBean(Class<T> clazz) {
         try {
-            return appContext.getBean(clazz);
+            return applicationContext.getBean(clazz);
         } catch (BeansException ex) {
             Map<String, T> map = getBeansOfType(clazz);
             Optional<Map.Entry<String, T>> any = map.entrySet().stream().filter(e -> e.getValue().getClass().equals(clazz)).findAny();
             return (T) any.orElse(null);
         }
-
-        // if (appContext != null) {
-        //     try {
-        //         return appContext.getBean(clazz);
-        //     } catch (BeansException e) {
-        //         Map<String, T> map = getBeansOfType(clazz);
-        //         for (Map.Entry<String, T> entry : map.entrySet()) {
-        //             if (entry.getValue().getClass().equals(clazz)) {
-        //                 return entry.getValue();
-        //             }
-        //         }
-        //     }
-        // }
-        // return null;
-
     }
 
-    public static <T> Map<String, T> getBeansOfType(Class<T> clazz) throws BeansException {
-        Map<String, T> map = appContext.getBeansOfType(clazz);
-
-        if (map.isEmpty() && appContext.getParent() != null) {
-            map = appContext.getParent().getBeansOfType(clazz);
-        }
-
-        return map;
+    public static <T> T getBean(String beanName, Class<T> clazz) {
+        return applicationContext.getBean(beanName, clazz);
     }
 
-    public static <T> T getBean(String beanId, Class<T> clazz) {
-        return appContext != null ? appContext.getBean(beanId, clazz) : null;
+    public static <T> Map<String, T> getBeansOfType(Class<T> type) {
+        return applicationContext.getBeansOfType(type);
+    }
+
+    public static String[] getBeanNamesForType(Class<?> type) {
+        return applicationContext.getBeanNamesForType(type);
+    }
+
+    public static String getProperty(String key) {
+        return applicationContext.getEnvironment().getProperty(key);
+    }
+
+    public static String[] getActiveProfiles() {
+        return applicationContext.getEnvironment().getActiveProfiles();
+    }
+
+    public static String getActiveProfile() {
+        String[] activeProfiles = getActiveProfiles();
+        return ArrayUtil.isNotEmpty(activeProfiles) ? activeProfiles[0] : null;
     }
 
 
@@ -102,22 +103,15 @@ public class SpringContext implements ApplicationContextAware {
      * 根据order顺序排列
      */
     public static <T> List<T> getOrderedBeans(Class<T> clazz) {
-        Collection<T> values = getBeansOfType(clazz).values();
-        List<T> list = new ArrayList<>(values);
-        OrderComparator.sort(list);
-        return list;
+        return getBeansOfType(clazz).values().stream().sorted(OrderComparator.INSTANCE).collect(Collectors.toList());
     }
 
     /**
      * 获取当前环境中,所有RestController提供的接口
-     *
-     * @param applicationContext
-     * @param result
      */
     public static void extractMethodMappings(Map<String, Object> result) {
-        if (appContext != null) {
-
-            for (Object o : appContext.getBeansOfType(AbstractHandlerMethodMapping.class).entrySet()) {
+        if (applicationContext != null) {
+            for (Object o : applicationContext.getBeansOfType(AbstractHandlerMethodMapping.class).entrySet()) {
                 Map.Entry<String, AbstractHandlerMethodMapping> bean = (Map.Entry) o;
 
                 // 只处理 RequestMappingHandlerMapping
@@ -141,13 +135,31 @@ public class SpringContext implements ApplicationContextAware {
 
                     Map<String, String> map = new LinkedHashMap();
                     map.put("beanType", method.getBeanType().getName());
-                    map.put("method",method.getMethod().getName()   );
+                    map.put("method", method.getMethod().getName());
                     map.put("url", key.getPatternsCondition().toString());
                     result.put(methodEntry.getKey().toString(), map);
                 }
             }
         }
     }
+
+    /**
+     * 动态注册Bean
+     *
+     * @param calzz      类型
+     * @param properties Bean的属性值
+     */
+    public static void registerBeanDefinition(Class calzz, Map<String, Object> properties) {
+        BeanDefinitionBuilder builder = BeanDefinitionBuilder.rootBeanDefinition(calzz).setLazyInit(false);
+        if (CollectionUtil.isNotEmpty(properties)) {
+            properties.forEach((k, v) -> builder.addPropertyValue(k, v));
+        }
+        // builder.setInitMethodName("start")
+        // builder.setDestroyMethodName("shutdown");
+        ((GenericWebApplicationContext) applicationContext).registerBeanDefinition(calzz.getName(), builder.getBeanDefinition());
+        log.info("==> 注册Bean, {} ", calzz.getName());
+    }
+
 
     // @SuppressWarnings("deprecation")
     // public static Method getHandleMethod(HttpServletRequest request, Class clazz) throws Exception {
@@ -170,22 +182,6 @@ public class SpringContext implements ApplicationContextAware {
     //
     //     return method.orElse(null);
     //
-    //     // for (Method method : clazz.getMethods()) {
-    //     // 	RequestMapping rm = method.getAnnotation(RequestMapping.class);
-    //     // 	if (rm != null) {
-    //     // 		for (String val : rm.value()) {
-    //     //
-    //     // 			while (pathVariables != null && val.indexOf("{") < val.indexOf("}")) {
-    //     // 				String temp = val.substring(val.indexOf("{") + 1, val.indexOf("}"));
-    //     // 				val = val.replace("{" + temp + "}", pathVariables.getString(temp));
-    //     // 			}
-    //     // 			if ("".equals(val) || methodName.equals(val)) {
-    //     // 				return method;
-    //     // 			}
-    //     // 		}
-    //     // 	}
-    //     // }
-    //     // return null;
     // }
 
 }

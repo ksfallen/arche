@@ -124,7 +124,7 @@ public class ESTest {
         // builder.
 
         // System.out.println(mappings);
-        System.out.println(JsonUtil.toJsonString(object));
+        System.out.println(JsonUtil.toJson(object));
     }
 
     // @foramtter:off

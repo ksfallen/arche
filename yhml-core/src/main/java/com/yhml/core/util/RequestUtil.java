@@ -1,5 +1,13 @@
 package com.yhml.core.util;
 
+import com.alibaba.fastjson.annotation.JSONField;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -8,17 +16,6 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.http.MediaType;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
-
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.annotation.JSONField;
-
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,9 +23,8 @@ import lombok.extern.slf4j.Slf4j;
 public class RequestUtil {
 
     /**
-     * 静态取request，本地junit非容器运行时无法使用，服务未启动完成无法使用
-     *
-     * @return
+     * 静态取request
+     * 本地junit非容器运行时无法使用，服务未启动完成无法使用
      */
     public static HttpServletRequest getRequest() {
         try {
@@ -44,10 +40,6 @@ public class RequestUtil {
 
     /**
      * 取重定向完整根路径，防止重复contextpath
-     *
-     * @param request
-     * @param page
-     * @return
      */
     public static String getRootRedirectURL(HttpServletRequest request, String page) {
         StringBuffer url = request.getRequestURL();
@@ -63,9 +55,6 @@ public class RequestUtil {
 
     /**
      * 取IP地址
-     *
-     * @param request
-     * @return
      */
     public static String getIpAddress(HttpServletRequest request) {
         String ip = request.getHeader("x-forwarded-for");
@@ -101,8 +90,6 @@ public class RequestUtil {
     }
 
     /**
-     * @param request
-     * @return
      * @category 获取request参数
      */
     public static Map<String, String> getParams(HttpServletRequest request) {
@@ -125,7 +112,7 @@ public class RequestUtil {
         response.setContentType(MediaType.APPLICATION_JSON_UTF8_VALUE);
         response.setCharacterEncoding(StandardCharsets.UTF_8.name());
         try {
-            response.getWriter().print(JsonUtil.toJsonString(body));
+            response.getWriter().print(JsonUtil.toJson(body));
             response.getWriter().flush();
             response.getWriter().close();
         } catch (IOException ignored) {
@@ -141,10 +128,10 @@ public class RequestUtil {
         String result = HttpClientUtil.getInstance().httpGet(url);
         log.debug("getAddressByIp ip={}, result={}", ipaddr, result);
 
-        JSONObject object = JsonUtil.parseObject(result);
+        Map<String, Object> object = JsonUtil.toMap(result);
         if (object.containsKey("code") && object.get("code").toString().equals("0")) {
-            JSONObject data = (JSONObject) object.get("data");
-            Address address = JsonUtil.parseObject(data.toJSONString(), Address.class);
+            String data = (String) object.get("data");
+            Address address = JsonUtil.parse(data, Address.class);
             System.out.println("address = " + address);
             return address;
         }
@@ -156,17 +143,12 @@ public class RequestUtil {
     @Data
     public static class Address {
         private String countryId;
-
         private String country;
-
         private String area;
-
         @JSONField(name = "region")
         private String province;
-
         @JSONField(name = "regionId")
         private String provinceId;
-
         private String cityId;
         private String city;
         private String countyId;

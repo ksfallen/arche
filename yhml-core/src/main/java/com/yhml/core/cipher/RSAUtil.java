@@ -1,4 +1,4 @@
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
 
 import java.io.*;
 import java.security.*;
@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-import static com.yhml.core.crypt.EncodeUtil.*;
+import static com.yhml.core.cipher.EncodeUtil.*;
 
 /**
  * 默认使用 base64 编码

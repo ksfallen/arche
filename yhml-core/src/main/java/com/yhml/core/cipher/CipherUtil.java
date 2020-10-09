@@ -1,12 +1,11 @@
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
 
 
 /**
  * 密码加密工具类
  */
-public class EntryptPwdUtil {
+public class CipherUtil {
 
-    public static final String HASH_ALGORITHM = "SHA-1";
     public static final int HASH_INTERATIONS = 1024;
     public static final int SALT_SIZE = 8;
 

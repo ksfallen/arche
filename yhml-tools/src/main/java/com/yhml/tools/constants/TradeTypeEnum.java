@@ -19,6 +19,7 @@ public enum TradeTypeEnum {
     ASSETS_BUY("资产买入"),
     ASSETS_SOLD("资产卖出"),
     BALANCE("结余调整"),
+    FUNDS_TRANSFER("资金转移"),
     ;
 
     private String type;

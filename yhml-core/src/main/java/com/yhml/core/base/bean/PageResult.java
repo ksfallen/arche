@@ -16,8 +16,8 @@ import lombok.Setter;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PageDTO<T> {
-    private Integer pageNo;
+public class PageResult<T> {
+    private Integer pageNum;
     private Integer pageSize;
     private Integer totalCount;
     private  List<T> list;

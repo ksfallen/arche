@@ -1,17 +1,16 @@
 package com.yhml.bd.bd.es.goods;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
+import com.yhml.bd.bd.es.ESSearchApi;
+import com.yhml.bd.bd.es.model.SearchQuery;
+import com.yhml.core.base.bean.PageResult;
+import com.yhml.core.util.JsonUtil;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.util.CollectionUtils;
 
-import com.yhml.bd.bd.es.ESSearchApi;
-import com.yhml.bd.bd.es.model.SearchQuery;
-import com.yhml.core.base.bean.PageDTO;
-import com.yhml.core.util.JsonUtil;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -35,12 +34,12 @@ public class GoodsSearchService {
 
     public void index(GoodsSearchModel goods) {
         log.info("索引商品：{}", goods);
-        api.index(index, type, getDocumentId(goods), JsonUtil.toJsonString(goods));
+        api.index(index, type, getDocumentId(goods), JsonUtil.toJson(goods));
     }
 
     public void index(List<GoodsSearchModel> list) {
         if (!CollectionUtils.isEmpty(list)) {
-            Map<String, String> map = list.stream().collect(toMap(model -> getDocumentId(model), model -> JsonUtil.toJsonString(model)));
+            Map<String, String> map = list.stream().collect(toMap(model -> getDocumentId(model), model -> JsonUtil.toJson(model)));
             api.bulkIndex(index, type, map);
         }
     }
@@ -50,7 +49,7 @@ public class GoodsSearchService {
         api.delete(index, type, getDocumentId(deleteModel.getPlatformId(), deleteModel.getSpuId(), deleteModel.getShopId()));
     }
 
-    public PageDTO<GoodsSearchModel> search(SearchQuery query) {
+    public PageResult<GoodsSearchModel> search(SearchQuery query) {
         log.info("搜索商品：{}", query);
 
         SearchResponse response = api.search(query, index, type);
@@ -58,11 +57,11 @@ public class GoodsSearchService {
         List<GoodsSearchModel> list = new ArrayList<>();
         for (SearchHit hit : response.getHits()) {
             String source = hit.getSourceAsString();
-            GoodsSearchModel model = JsonUtil.parseObject(source, GoodsSearchModel.class);
+            GoodsSearchModel model = JsonUtil.parse(source, GoodsSearchModel.class);
             list.add(model);
         }
 
-        return new PageDTO<>(query.getPageNo(), query.getPageSize(), (int) response.getHits().getTotalHits(), list);
+        return new PageResult<>(query.getPageNo(), query.getPageSize(), (int) response.getHits().getTotalHits(), list);
     }
 
 

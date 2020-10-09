@@ -1,5 +1,10 @@
 package com.yhml.core.util;
 
+import cn.hutool.core.date.DatePattern;
+import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ArrayUtil;
+
+import java.text.ParseException;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -8,14 +13,14 @@ import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.Optional;
 
-import cn.hutool.core.date.DatePattern;
-import cn.hutool.core.date.DateTime;
-import cn.hutool.core.date.DateUtil;
 import lombok.extern.slf4j.Slf4j;
 
 
 @Slf4j
-public class DateUtils extends cn.hutool.core.date.DateUtil {
+public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
+    public static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+    public static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    public static final DateTimeFormatter TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss");
 
     public static final ZoneOffset GMT_8 = ZoneOffset.ofHours(8);
 
@@ -24,11 +29,11 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
         System.out.println(System.currentTimeMillis() / 1000L);
         System.out.println(Instant.now().getEpochSecond());
 
-        System.out.println("getCurrentTime() = " + getCurrentTime());
         System.out.println(LocalDate.now().minusDays(1).getDayOfWeek().getValue());
         System.out.println("getWeek() = " + getWeek());
-        System.out.println("getDiffTimeStr(DateUtil.date(), DateUtil.offsetWeek(DateUtil.date(), 1)) = " + getDiffTimeStr(DateUtil.date()
-                , DateUtil.offsetWeek(DateUtil.date(), 1)));
+        System.out.println("getDiffTimeStr(DateUtil.date(), DateUtil.offsetWeek(DateUtil.date(), 1)) = " + getDiffTimeStr(DateUtil.date(),
+                DateUtil.offsetWeek(DateUtil
+                .date(), 1)));
         System.out.println(DateUtil.formatBetween(DateUtil.date(), DateUtil.offsetWeek(DateUtil.date(), 1)));
     }
 
@@ -44,18 +49,36 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
         return toDate(localDate.atStartOfDay());
     }
 
-    public static Long unixTimestamp() {
+    /**
+     * 10 位时间错 秒
+     */
+    public static Long toTimestamp() {
         return Instant.now().getEpochSecond();
     }
 
-    public static Long unixTimestamp(Date date) {
-        return date.getTime() / 1000L;
+    public static long toTimestamp(Date date) {
+        return date == null ? 0 : toLocalDateTime(date).toInstant(GMT_8).getEpochSecond();
+    }
+
+    /**
+     * 转时间戳
+     * 支持  yyyy-MM-dd yyyy-MM-dd HH:mm:ss
+     */
+    public static Long toTimestamp(String dateString) {
+        return toTimestamp(parse(dateString, DatePattern.NORM_DATE_PATTERN, DatePattern.NORM_DATETIME_PATTERN));
+    }
+
+    public static Long toTimestamp(String dateString, String... pattern) {
+        return toTimestamp(parse(dateString, pattern));
     }
 
 
-
-    public static String getCurrentTime() {
+    public static String nowDateTime() {
         return DateUtil.now();
+    }
+
+    public static String nowDate() {
+        return LocalDate.now().toString();
     }
 
     public static String getCurrentTime(String pattern) {
@@ -64,25 +87,19 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
 
     /**
      * 将字符串转换成Date类型
-     *
-     * @param dateString
-     * @param pattern
-     * @return
      */
-    public static Date parseText(String dateString, String pattern) {
-        if (StringUtil.isEmpty(pattern)) {
+    public static Date parse(String dateString, String... pattern) {
+        if (ArrayUtil.isEmpty(pattern)) {
             return null;
         }
 
-        DateTime dateTime = null;
         try {
-            dateTime = DateUtil.parse(dateString, pattern);
-        } catch (Exception e) {
+            return parseDate(dateString, pattern);
+        } catch (ParseException e) {
             log.error("", e);
-
         }
 
-        return dateTime;
+        return null;
     }
 
 
@@ -97,9 +114,7 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
     /**
      * 在传入的日期基础上往后加n天
      *
-     * @param date
-     * @param n    要加的天数
-     * @return
+     * @param n 要加的天数
      */
     public static Date addDay(Date date, int n) {
         return DateUtil.offsetDay(date, n);
@@ -110,6 +125,7 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
     }
 
     //
+
     /**
      * 判断当前时间是否在开始时间与结束时间之间
      *
@@ -150,9 +166,6 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
 
     /**
      * 判断是否为有效的身份证日期
-     *
-     * @param date
-     * @return
      */
     public static boolean isIdDate(String date) {
         if (StringUtil.isEmpty(date)) {
@@ -165,7 +178,7 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
             return false;
         }
 
-        Optional<Date> optional = Optional.ofNullable(parseText(date, DatePattern.PURE_DATE_PATTERN));
+        Optional<Date> optional = Optional.ofNullable(parse(date, DatePattern.PURE_DATE_PATTERN));
 
         return optional.isPresent() && StringUtil.equals(date, format(optional.get(), DatePattern.PURE_DATE_PATTERN));
     }
@@ -184,9 +197,6 @@ public class DateUtils extends cn.hutool.core.date.DateUtil {
 
     /**
      * 获取两个时间的间隔,字符串表示
-     *
-     * @param start
-     * @param end
      */
     public static String getDiffTimeStr(Date start, Date end) {
         String time = "";

@@ -1,18 +1,18 @@
 package com.yhml.core.config.mvc;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-
+import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.alibaba.fastjson.serializer.SimpleDateFormatSerializer;
+import com.alibaba.fastjson.support.config.FastJsonConfig;
+import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
+import com.google.common.collect.Lists;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.StringHttpMessageConverter;
 
-import com.alibaba.fastjson.support.config.FastJsonConfig;
-import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
-import com.google.common.collect.Lists;
-import com.yhml.core.util.JsonUtil;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 
 
 public class HttpMessageConverterConfig {
@@ -59,8 +59,23 @@ public class HttpMessageConverterConfig {
      */
     private static FastJsonConfig fastJsonConfig() {
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
-        fastJsonConfig.getSerializeConfig().put(Date.class, JsonUtil.simpleDateFormat);
-        fastJsonConfig.setSerializerFeatures(JsonUtil.getFeatures());
+        fastJsonConfig.getSerializeConfig().put(Date.class, new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss"));
+        fastJsonConfig.setSerializerFeatures(getFeatures());
         return fastJsonConfig;
+    }
+
+    public static SerializerFeature[] getFeatures() {
+        List<SerializerFeature> list = new ArrayList<>();
+        // list.add(SerializerFeature.WriteMapNullValue);              // 输出空置字段
+        list.add(SerializerFeature.WriteNullListAsEmpty);           // list字段如果为null，输出为[]
+        // list.add(SerializerFeature.WriteNullNumberAsZero);          // 数值字段如果为null，输出为0
+        // list.add(SerializerFeature.WriteNullBooleanAsFalse);        // Boolean字段如果为null，输出为false
+        list.add(SerializerFeature.WriteNullStringAsEmpty);         // 字符类型字段如果为null，输出为""
+        list.add(SerializerFeature.WriteDateUseDateFormat);         // 全局修改日期格式。JSON.DEFFAULT_DATE_FORMAT = “yyyy-MM-dd”
+        list.add(SerializerFeature.DisableCircularReferenceDetect); // 关闭FastJson的引用检测
+        // list.add(SerializerFeature.BrowserCompatible);              // 中文转uncode
+        list.add(SerializerFeature.SortField);                      // 排序
+
+        return list.toArray(new SerializerFeature[0]);
     }
 }

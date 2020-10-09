@@ -6,10 +6,8 @@ import lombok.*;
  * @author: Jianfeng.Hu
  * @date: 2017/11/3
  */
-@Getter
-@Setter
+@Data
 @AllArgsConstructor
-@ToString
 public class DictEntry {
     private String key;
     private String name;

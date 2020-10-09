@@ -3,15 +3,13 @@ package com.yhml.tools.money;
 import com.yhml.tools.constants.AccountEnum;
 import com.yhml.tools.constants.CatalogEnum;
 import com.yhml.tools.constants.TradeTypeEnum;
-import com.yhml.tools.model.CsvModel;
 import com.yhml.tools.money.bill.AlipayBill;
 import com.yhml.tools.money.bill.MoneyPro;
-import com.yhml.tools.util.CsvUtil;
+import com.yhml.tools.util.CsvUtils;
 import org.junit.Test;
 import cn.hutool.core.date.DateField;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.text.csv.CsvData;
-import cn.hutool.core.text.csv.CsvReader;
 import cn.hutool.core.text.csv.CsvRow;
 import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.StrUtil;
@@ -31,101 +29,107 @@ import lombok.extern.slf4j.Slf4j;
 public class AlipayHander implements IMoneyHandler {
 
     @Test
-    public void porcess() {
-        File file = CsvUtil.getCsvBill("alipay_record");
-        List<AlipayBill> list = read(file, AlipayBill.class);
+    public void process() {
+        File file = CsvUtils.getCsvBill("alipay_record");
+        List<MoneyPro> data = parseBill(file);
+        CsvUtils.writer(data, "data.csv");
+        log.info("支付宝转MoneyPro账单, 完成:{}笔", data.size());
+    }
 
+    private List<MoneyPro> parseBill(File file) {
+        List<AlipayBill> list = read(file);
         List<MoneyPro> data = new ArrayList<>();
-
         for (AlipayBill model : list) {
+            // 过滤余额宝每日收益, 月底统一结算
+            if (model.isYueBao()) {
+                continue;
+            }
             try {
-                data.add(processBill(model));
+                data.add(toMoneyPro(model));
             } catch (Exception e) {
                 log.error("转换MoneyPro对象出错:{}", model, e);
             }
         }
-
-        CsvUtil.writer(data, "data.csv");
-        log.info("支付宝转MoneyPor账单, 完成:{}笔", data.size());
+        return data;
     }
 
-    private MoneyPro processBill(AlipayBill model) {
+    private MoneyPro toMoneyPro(AlipayBill model) {
         MoneyPro pro = new MoneyPro();
-        pro.setAccount(getAccount(model));
+        pro.setAccount(AccountEnum.CMB1799.getProAccount());
         pro.setTradeTime(model.getTradeTime());
         pro.setAmount(model.getAmount());
-        pro.setCatalog(getCatalog(model, pro));
         pro.setTradeType(TradeTypeEnum.isIncome(model.getTradeType()) ? TradeTypeEnum.INCOME.getType() : TradeTypeEnum.CONSUME.getType());
-        pro.setLable("个人");
+
+        if (model.isHuaBei()) {
+            pro.setAccount(AccountEnum.CMB2071.getProAccount());
+            pro.setToAccount(AccountEnum.HUABEI.getProAccount());
+            pro.setDesc("花呗还款");
+        } else if (model.IsFundsTransfer()) {
+            pro.setAccount(AccountEnum.CMB2071.getProAccount());
+            pro.setToAccount(AccountEnum.YUEBAO.getProAccount());
+        } else {
+            parseCatalog(model, pro);
+        }
 
         // 处理基金买入卖出
         if (model.isFund()) {
-            pro.setDesc(model.getProductName().split("-")[1]); // 基金名称
+            // 基金名称
+            pro.setDesc(model.getProductName().split("-")[1]);
             if (TradeTypeEnum.isIncome(model.getTradeType())) {
-                pro.setCatalog(CatalogEnum.FUND.getAccount());
+                pro.setCatalog(CatalogEnum.FUND.getCatalog());
+            } else {
+                pro.setAccount(AccountEnum.YUEBAO.getProAccount());
+                pro.setToAccount(pro.getDesc());
             }
         }
 
-        // 余额宝
+        // 余额宝收益
         if (model.isYueBao()) {
             pro.setAccount(AccountEnum.YUEBAO.getProAccount());
-            pro.setCatalog(CatalogEnum.LX.getCatalog());
-            pro.setDesc("收益");
-        }
-
-        if (CatalogEnum.ZC.getCatalog().equals(pro.getCatalog()) || CatalogEnum.GT.getCatalog().equals(pro.getCatalog())
-                || CatalogEnum.DC.getCatalog().equals(pro.getCatalog())) {
-            pro.setLable("杭州");
+            pro.setCatalog(CatalogEnum.LC.getCatalog());
         }
 
         return pro;
     }
 
-    private String getCatalog(AlipayBill model, MoneyPro pro) {
-        String catalog = CatalogEnum.getCatalog(model.getProductName());
-        if (StrUtil.isBlank(catalog)) {
-            catalog = CatalogEnum.getCatalog(model.getTradeName());
+    private void parseCatalog(AlipayBill model, MoneyPro pro) {
+        CatalogEnum catalog = CatalogEnum.getProCatalog(model.getProductName(), model.getTradeName());
+        if (catalog == null) {
+            log.info("没有找到分类, 商品名称:{}, 交易对象:{}", model.getProductName(), model.getTradeName());
+            catalog = CatalogEnum.GW;
+            pro.setDesc(model.getTradeName());
         }
 
-        if (StrUtil.isBlank(catalog)) {
-            catalog = CatalogEnum.GW.getCatalog();
+        if (catalog.equals(CatalogEnum.GW)) {
+            int hour = DateUtil.parse(model.getTradeTime()).getField(DateField.HOUR);
+            if (hour >= 7 && hour <= 9) {
+                catalog = CatalogEnum.ZC;
+                pro.setDesc("早饭");
+            }
+            if (hour >= 11 && hour <= 13) {
+                catalog = CatalogEnum.ZC;
+                pro.setDesc("午饭");
+            }
+            if (hour >= 17 && hour <= 19) {
+                catalog = CatalogEnum.ZC;
+                pro.setDesc("晚饭");
+            }
         }
+        pro.setCatalog(catalog.getCatalog());
+        pro.setLable(StrUtil.isBlank(catalog.getLabel()) ? "个人" : catalog.getLabel());
 
-        int hour = DateUtil.parse(model.getTradeTime()).getField(DateField.HOUR);
-
-        // 中午
-        if ((hour >= 11 && hour <= 13) && catalog.equals(CatalogEnum.GW.getCatalog())) {
-            catalog = CatalogEnum.ZC.getCatalog();
-            pro.setDesc("午饭");
+        if (catalog.equals(CatalogEnum.LF)) {
+            pro.setAccount(AccountEnum.HUABEI.getProAccount());
         }
-
-        // 傍晚
-        if ((hour >= 17 && hour <= 19) && catalog.equals(CatalogEnum.GW.getCatalog())) {
-            catalog = CatalogEnum.ZC.getCatalog();
-            pro.setDesc("晚饭");
+        if (model.getProductName().contains("超市")) {
+            pro.setDesc("超市");
         }
-
-        return catalog;
     }
 
-    private String getAccount(AlipayBill model) {
-        if (model.isFund()) {
-            return AccountEnum.YUEBAO.getProAccount();
-        }
-        // String account = AlipayLogin.getBillDetail(model.getTradeId());
-        // String proAccount = AccountEnum.getProAccount(account);
-        // if (StrUtil.isNotBlank(proAccount)) {
-        //     return proAccount;
-        // }
-        return AccountEnum.CMB1799.getProAccount();
-    }
-
-    private static <T extends CsvModel> List<T> read(File file, Class<T> clazz) {
-        CsvReader reader = CsvUtil.getReader();
-        CsvData data = reader.read(file, CharsetUtil.CHARSET_GBK);
+    private static List<AlipayBill> read(File file) {
+        CsvData data = CsvUtils.getReader().read(file, CharsetUtil.CHARSET_GBK);
         List<String> header = new ArrayList<>();
-        List<T> result = new ArrayList<>();
-
+        List<AlipayBill> result = new ArrayList<>();
         for (CsvRow csvRow : data.getRows()) {
             if (csvRow.getRawList().size() <= 5) {
                 log.info("{}", csvRow.getRawList());
@@ -136,7 +140,7 @@ public class AlipayHander implements IMoneyHandler {
                 // log.info("开始解析 行号={}", csvRow.getOriginalLineNumber() + 1);
                 continue;
             }
-            result.add(CsvUtil.toBean(header, csvRow, clazz));
+            result.add(CsvUtils.toBean(header, csvRow,  AlipayBill.class));
         }
         return result;
     }

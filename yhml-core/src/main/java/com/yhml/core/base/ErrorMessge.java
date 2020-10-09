@@ -1,21 +1,21 @@
 package com.yhml.core.base;
 
-import org.apache.commons.lang3.StringUtils;
+import java.util.Arrays;
+import java.util.Optional;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
-/**
- * 返回结果信息枚举
- */
 @Getter
 @AllArgsConstructor
 public enum ErrorMessge {
 
     SUCCESS("0", "success"),
-    ERROR_SYS("-1", "system error"),
-
+    ERROR_SYS("500", "system error"),
     ERROR_SUBMIT_INTIME("500", "请求过于频繁,请稍后重试"),
+
+    UNAUTHORIZED("401", "Unauthorized"),
+
     ERROR_DB("1000", "db error"),
     SERVICE_NOT_AVAILABLE("1001", "service not available"),
     ERROR_REPEAT_SUBMIT("1002", "重复提交"),
@@ -27,17 +27,12 @@ public enum ErrorMessge {
      */
     FAILED_BUSINESS("4000", "Business Failed");
 
-
 	public static String getMessage(String code) {
-        String result = "";
-        for(ErrorMessge temp: ErrorMessge.values()){
-            if(StringUtils.equals(code, temp.code)){
-                result =  temp.getMsg();
-                break;
-            }
+        Optional<ErrorMessge> first = Arrays.stream(ErrorMessge.values()).filter(a -> a.code.equals(code)).findFirst();
+        if (first.isPresent()) {
+            return first.get().getMsg();
         }
-
-        return result;
+        return "";
 	}
 
     private String code;

@@ -1,4 +1,4 @@
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
 
 import java.io.UnsupportedEncodingException;
 
@@ -7,7 +7,7 @@ import java.io.UnsupportedEncodingException;
  * .bitpedia.collider.core/src/org/bitpedia/util/Base32.java?view=markup 这个改写的
  * base32实现 Base32 - encodes and decodes RFC3548 Base32 (see
  * http://www.faqs.org/rfcs/rfc3548.html )
- * 
+ *
  * @author Robert Kaye
  * @author Gordon Mohr
  */
@@ -49,9 +49,9 @@ public final class Base32 {
 	};
 
 	private static final int base32LookupLength = base32Lookup.length;
-	
+
 	private static final String defaultStringEncoding = "UTF-8";
-	
+
 	/**
 	 * 使用base32编码字符串，使用缺省的utf-8解析字符串
 	 * @param s
@@ -60,7 +60,7 @@ public final class Base32 {
 	public static String encode(String s){
 		return encode(s,defaultStringEncoding);
 	}
-	
+
 	/**
 	 * 使用base32反解析字符串,使用缺省的utf-8解析字符串
 	 * @param s
@@ -69,7 +69,7 @@ public final class Base32 {
 	public static String decode(String s){
 		return decode(s,defaultStringEncoding);
 	}
-	
+
 	/**
 	 * 将字符串使用指定编码解析后使用base32编码
 	 * @param s
@@ -108,11 +108,11 @@ public final class Base32 {
 
 	/**
 	 * Encodes byte array to Base32 String.
-	 * 
+	 *
 	 * @param bytes
 	 *            Bytes to encryptWithPublickKeyWithBase64.
 	 * @return Encoded byte array <code>bytes</code> as a String.
-	 * 
+	 *
 	 */
 	public static String encodeBytes(final byte[] bytes) {
 		if (bytes == null || bytes.length == 0) {
@@ -153,7 +153,7 @@ public final class Base32 {
 
 	/**
 	 * Decodes the given Base32 String to a raw byte array.
-	 * 
+	 *
 	 * @param base32
 	 * @return Decoded <code>base32</code> String as a raw byte array.
 	 */

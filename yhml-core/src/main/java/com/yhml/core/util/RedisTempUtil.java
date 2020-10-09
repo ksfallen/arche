@@ -36,7 +36,7 @@ public class RedisTempUtil {
         }
 
         try {
-            redisTemplate.opsForValue().set(key, JsonUtil.toJsonString(value));
+            redisTemplate.opsForValue().set(key, JsonUtil.toJson(value));
             return true;
         } catch (Exception e) {
             log.error("", e);
@@ -59,7 +59,7 @@ public class RedisTempUtil {
         }
 
         try {
-            redisTemplate.opsForValue().set(key, JsonUtil.toJsonString(value), expire, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(key, JsonUtil.toJson(value), expire, TimeUnit.SECONDS);
             return true;
         } catch (Exception e) {
             log.error("", e);
@@ -80,7 +80,7 @@ public class RedisTempUtil {
         try {
             log.debug("redis get, key:" + key + ",clazz:" + clazz.getName());
             Object val = redisTemplate.boundValueOps(key).get();
-            return val == null ? null : JsonUtil.parseObject(val.toString(), clazz);
+            return val == null ? null : JsonUtil.parse(val.toString(), clazz);
         } catch (Exception e) {
             log.error(e.toString());
             throw new Exception(e);

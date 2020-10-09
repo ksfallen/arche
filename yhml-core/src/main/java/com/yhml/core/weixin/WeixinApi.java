@@ -11,7 +11,7 @@ import org.springframework.http.ResponseEntity;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.yhml.core.crypt.Base64Util;
+import com.yhml.core.cipher.Base64Util;
 import com.yhml.core.util.JsonUtil;
 import com.yhml.core.util.RestTemplateUtil;
 import com.yhml.core.weixin.request.WxAppInfo;
@@ -78,7 +78,7 @@ public class WeixinApi {
         map.put("appid", appid);
         map.put("secret", secret);
         String resp = restTemplate.doGet(URL_ACCESS_TOKEN, map);
-        WxAccessToken token = JsonUtil.parseObject(resp, WxAccessToken.class);
+        WxAccessToken token = JsonUtil.parse(resp, WxAccessToken.class);
 
         if (WxResp.error(token)) {
             log.info("小程序查询用户token失败. {}", resp);
@@ -131,7 +131,7 @@ public class WeixinApi {
         if (null != resp && HttpStatus.OK.equals(resp.getStatusCode())) {
             byte[] body = (byte[]) resp.getBody();
 
-            WxResp data = JsonUtil.parseObject(new String(body), WxResp.class);
+            WxResp data = JsonUtil.parse(new String(body), WxResp.class);
             if (WxResp.success(data)) {
                 String base64 = Base64Util.encodeBase64(body);
                 log.info("QRCode:{}", base64);
@@ -161,7 +161,7 @@ public class WeixinApi {
         if (null != resp && HttpStatus.OK.equals(resp.getStatusCode())) {
             byte[] body = (byte[]) resp.getBody();
 
-            WxResp data = JsonUtil.parseObject(new String(body), WxResp.class);
+            WxResp data = JsonUtil.parse(new String(body), WxResp.class);
             if (WxResp.success(data)) {
                 String base64 = Base64Util.encodeBase64(body);
                 log.info("QRCode:{}", base64);
@@ -212,7 +212,7 @@ public class WeixinApi {
 
         String resp = restTemplate.doGet(URL_USER_INFO, map);
 
-        WxUserInfo userInfo = JsonUtil.parseObject(resp, WxUserInfo.class);
+        WxUserInfo userInfo = JsonUtil.parse(resp, WxUserInfo.class);
 
         if (WxResp.error(userInfo)) {
             log.info("小程序登录 查询用户信息失败. {}", resp);

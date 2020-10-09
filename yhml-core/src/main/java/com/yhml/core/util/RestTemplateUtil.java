@@ -27,12 +27,12 @@ public class RestTemplateUtil {
 
 
     public ResponseEntity doPost(String url, Object params, Class responseType) {
-        String json = JsonUtil.toJsonString(params);
+        String json = JsonUtil.toJson(params);
         return exchange(HttpMethod.POST, url, json, null, responseType);
     }
 
     public String doPost(String url, Map<String, ?> params) {
-        String json = JsonUtil.toJsonString(params);
+        String json = JsonUtil.toJson(params);
         return exchange(HttpMethod.POST, url, json, null);
     }
 

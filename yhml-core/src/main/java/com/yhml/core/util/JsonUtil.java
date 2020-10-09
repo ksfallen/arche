@@ -1,95 +1,96 @@
 package com.yhml.core.util;
 
-import java.util.ArrayList;
-import java.util.HashMap;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalTimeSerializer;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import org.apache.commons.collections.CollectionUtils;
-
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
-import com.alibaba.fastjson.serializer.SerializeConfig;
-import com.alibaba.fastjson.serializer.SerializeFilter;
-import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.serializer.SimpleDateFormatSerializer;
-import com.yhml.core.base.bean.BaseBean;
-import com.yhml.core.base.bean.Result;
-import com.yhml.core.util.fastjson.NullValueFilter;
-
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JsonUtil {
-    public static final SimpleDateFormatSerializer simpleDateFormat = new SimpleDateFormatSerializer("yyyy-MM-dd HH:mm:ss");
-    public static final SerializerFeature[] features;
-    public static final List<SerializeFilter> filterList = new ArrayList<>();
+    private final static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private final static DateTimeFormatter formatter2 = DateTimeFormatter.ofPattern("HH:mm:ss");
 
-    private static final SerializeFilter[] EMPTY_FILTER = null;
-    private static final SerializeConfig config = SerializeConfig.globalInstance;
+    private static final ObjectMapper mapper = new ObjectMapper();
 
     static {
-        config.put(java.util.Date.class, simpleDateFormat);
-        // config.put(java.sql.Date.class, new DateSerializer()); 		// 使用和json-lib兼容的日期输出格式
-
-        features = getFeatures();
-
-        filterList.add(new NullValueFilter());
+        mapper.setDateFormat(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss"));
+        mapper.disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);      // 忽略不存在的属性
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);         // 禁止 date 转毫秒
+        mapper.disable(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS);          // map的key的自然排序
+        // mapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);        // 属性为空或者为 NULL 都不序列化
+        mapper.registerModule(getJavaTimeModule());
     }
 
-    public static SerializerFeature[] getFeatures() {
-        List<SerializerFeature> list = new ArrayList<>();
-        // list.add(SerializerFeature.WriteMapNullValue);              // 输出空置字段
-        list.add(SerializerFeature.WriteNullListAsEmpty);           // list字段如果为null，输出为[]
-        // list.add(SerializerFeature.WriteNullNumberAsZero);          // 数值字段如果为null，输出为0
-        // list.add(SerializerFeature.WriteNullBooleanAsFalse);        // Boolean字段如果为null，输出为false
-        list.add(SerializerFeature.WriteNullStringAsEmpty);         // 字符类型字段如果为null，输出为""
-        list.add(SerializerFeature.WriteDateUseDateFormat);         // 全局修改日期格式。JSON.DEFFAULT_DATE_FORMAT = “yyyy-MM-dd”
-        list.add(SerializerFeature.DisableCircularReferenceDetect); // 关闭FastJson的引用检测
-        // list.add(SerializerFeature.BrowserCompatible);              // 中文转uncode
-        list.add(SerializerFeature.SortField);                      // 排序
-
-        return list.toArray(new SerializerFeature[0]);
+    public static JavaTimeModule getJavaTimeModule() {
+        JavaTimeModule module = new JavaTimeModule();
+        module.addSerializer(LocalTime.class, new LocalTimeSerializer(formatter2));
+        module.addSerializer(LocalDateTime.class, new LocalDateTimeSerializer(formatter));
+        module.addDeserializer(LocalTime.class, new LocalTimeDeserializer(formatter2));
+        module.addDeserializer(LocalDateTime.class, new LocalDateTimeDeserializer(formatter));
+        return module;
     }
 
-    /**
-     * 包含默认 features , 输出空字段
-     *
-     * @param o
-     * @return
-     */
-    public static String toJsonString(Object o) {
-        if (o == null) {
-            return "";
-        }
-        if (o instanceof String) {
-            return (String) o;
-        }
 
-        return toJson(o, config, EMPTY_FILTER, features);
+    public static void main(String[] args) {
+        TestBean bean = new TestBean();
+        String json = toJson(bean);
+        System.out.println(json);
+        System.out.println(toPrettyJson(bean));
+        System.out.println(parse(json, TestBean.class));
+
+        Map<String, Object> map = toMap(json);
+        System.out.println(map);
+
+        List list = toList("[" + json + "]");
+        System.out.println(list);
     }
 
-    /**
-     * 不输出空字段
-     *
-     * @param o
-     * @param feature
-     * @return
-     */
-    public static String toJsonString(Object o, SerializerFeature ... feature) {
-        return toJson(o, null, EMPTY_FILTER, feature);
-    }
-
-    private static String toJson(Object object, SerializeConfig config, SerializeFilter[] filters, SerializerFeature... features) {
+    public static String toPrettyJson(Object object) {
         try {
-            if (config == null) {
-                config = SerializeConfig.globalInstance;
-            }
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
+        } catch (JsonProcessingException e) {
+            log.error("toJson error:{}, value:{}", e.getMessage(), object);
+        }
+        return "";
+    }
 
-            return JSON.toJSONString(object, config, filters, features);
+    public static String toJson(Object o) {
+        return toJson(null, o);
+    }
+
+    public static String toJson(ObjectMapper objectMapper, Object object) {
+        try {
+            if (object == null) {
+                return "";
+            }
+            if (object instanceof String) {
+                return (String) object;
+            }
+            if (objectMapper == null) {
+                objectMapper = mapper;
+            }
+            return objectMapper.writeValueAsString(object);
         } catch (Exception e) {
             log.error("toJson error:{}, value:{}", e.getMessage(), object);
         }
@@ -97,27 +98,58 @@ public class JsonUtil {
         return "";
     }
 
-    public static String toJsonString(Object object, SerializeFilter... filters) {
-        return toJson(object, config, filters);
+    public static Map<String, Object> toMap(String json) {
+        return parse(json, Map.class);
+    }
+
+    public static List<Map<String, String>> toList(String json) {
+        return parse(json, List.class);
+    }
+
+    public static List<String> toArray(String json) {
+        return toList(json, String.class);
     }
 
     /**
-     * 字符串转对象
+     * 解析字符串数组
+     *
+     * @param json [{ ... }, { ... }]
+     */
+    public static <T> List<T> toList(String json, Class<T> clazz) {
+        try {
+            return mapper.readValue(json, mapper.getTypeFactory().constructCollectionType(List.class, clazz));
+        } catch (Exception e) {
+            log.error("json parse error {}", e.getMessage() , e);
+        }
+        return Collections.emptyList();
+    }
+
+    /**
      *
      * @param json
      * @param clazz
      * @param <T>
      * @return
      */
-    public static <T> T parseObject(String json, Class<T> clazz) {
-        if (StringUtil.isBlank(json)) {
-            return null;
-        }
-
+    public static <T> Map<String, T> toMap(String json, Class<T> clazz) {
         try {
-            return JSON.parseObject(json, clazz);
+            return mapper.readValue(json, mapper.getTypeFactory().constructParametricType(Map.class, String.class, clazz));
         } catch (Exception e) {
-            log.error("parseObject error:{}, value:{}", e.getMessage(), json);
+            log.error("json parse error {}", e.getMessage() , e);
+        }
+        return Collections.emptyNavigableMap();
+    }
+
+    /**
+     * 字符串转对象z
+     */
+    public static <T> T parse(String json, Class<T> clazz) {
+        try {
+            if (StringUtil.isNotBlank(json)) {
+                return mapper.readValue(json, clazz);
+            }
+        } catch (Exception e) {
+            log.error("json parse error {}", e.getMessage() , e);
         }
 
         return null;
@@ -126,103 +158,23 @@ public class JsonUtil {
     /**
      * 解析 带泛型的对象
      * 调用方法  parseByTypeReference(json, new TypeReference<ResultBean<T>>(){})
-     *
-     * @param json
-     * @param typeReference
-     * @param <T>
-     * @return
      */
-    public static <T extends BaseBean> Result<T> parseByTypeReference(String json, TypeReference<Result<T>> typeReference) {
-        return JSON.parseObject(json, typeReference);
-    }
-
-
-    /**
-     * 解析字符串数组
-     *
-     * @param json [{ ... }, { ... }]
-     */
-    public static <T> List<T> parseArray(String json, Class<T> clazz) {
-        return JSON.parseArray(json, clazz);
-    }
-
-    /**
-     * JSON 对象转换成 java 对象
-     *
-     * @param json
-     * @param clazz
-     * @param <T>
-     * @return
-     */
-    public static <T> T toJavaObject(JSON json, Class<T> clazz) {
-        return JSON.toJavaObject(json, clazz);
-    }
-
-    /**
-     * JSONObject 对象转map
-     *
-     * @param jsonObject
-     * @return
-     */
-    public static Map<String, Object> parseObject(JSONObject jsonObject) {
-        Map<String, Object> map = new HashMap<>();
-        parseJSONObject(map, jsonObject);
-        return map;
-    }
-
-    public static JSONObject parseObject(String json) {
-        return JSON.parseObject(json);
-    }
-
-    /**
-     * JSONArray 对象转map
-     *
-     * @param jsonArray
-     * @return
-     */
-    public static List<Map<String, Object>> parseObject(JSONArray jsonArray) {
-        List<Map<String, Object>> list = new ArrayList<>();
-
-        if (CollectionUtils.isEmpty(jsonArray)) {
-            return list;
+    public static <T> T parseByTypeReference(String json, TypeReference<T> typeReference) {
+        try {
+            return mapper.readValue(json, typeReference);
+        } catch (IOException e) {
+            log.error("json parse error {}, json:{}", e.getMessage(), json);
         }
-
-        for (Object object : jsonArray) {
-            if (object instanceof JSONObject) {
-                Map<String, Object> m = new HashMap<>();
-                parseJSONObject(m, (JSONObject) object);
-                list.add(m);
-            }
-        }
-
-
-        return list;
+        return null;
     }
+}
 
-    /**
-     * JSONObject对象转map
-     *
-     * @param map
-     * @param jsonObject
-     */
-    private static void parseJSONObject(Map<String, Object> map, JSONObject jsonObject) {
-        if (jsonObject == null) {
-            return;
-        }
-
-        for (Entry<String, Object> entry : jsonObject.entrySet()) {
-            String key = entry.getKey();
-            Object value = entry.getValue();
-
-            if (value instanceof String) {
-                map.put(key, value);
-            } else if (value instanceof JSONObject) {
-                Map<String, Object> temp = parseObject((JSONObject) value);
-                map.put(key, temp);
-            } else if (value instanceof JSONArray) {
-                List<Map<String, Object>> list = parseObject((JSONArray) value);
-                map.put(key, list);
-            }
-        }
-    }
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
+class TestBean {
+    private String name;
+    private LocalDateTime date = LocalDateTime.now();
+    private LocalDate date2 = LocalDate.now();
+    private LocalTime date3 = LocalTime.now();
 }

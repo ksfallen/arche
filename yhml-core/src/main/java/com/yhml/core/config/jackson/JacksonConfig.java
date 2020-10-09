@@ -1,20 +1,26 @@
 package com.yhml.core.config.jackson;
 
-import java.io.IOException;
-import java.text.ParseException;
-import java.util.Date;
-
-import org.springframework.boot.jackson.JsonComponent;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.datatype.jsr310.deser.LocalDateTimeDeserializer;
+import com.fasterxml.jackson.datatype.jsr310.ser.LocalDateTimeSerializer;
 import com.yhml.core.util.DateUtils;
-
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilderCustomizer;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import cn.hutool.core.date.DatePattern;
+
+import java.io.IOException;
+import java.text.ParseException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Date;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -22,13 +28,24 @@ import lombok.extern.slf4j.Slf4j;
  * @date: 2019-06-13
  */
 @Slf4j
-@JsonComponent
+@Configuration
 public class JacksonConfig {
 
-    @org.springframework.beans.factory.annotation.Value("${spring.jackson.date-format:yyyy-MM-dd HH:mm:ss}")
+    @Value("${spring.jackson.date-format:yyyy-MM-dd HH:mm:ss}")
     private String pattern;
 
     private static final String[] patterns = {"yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd"};
+
+
+    @Bean
+    public Jackson2ObjectMapperBuilderCustomizer jackson2ObjectMapperBuilderCustomizer() {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern);
+        return builder ->  {
+            builder.serializerByType(LocalDateTime.class, new LocalDateTimeSerializer(formatter));
+            builder.deserializerByType(LocalDateTime.class, new LocalDateTimeDeserializer(formatter));
+        };
+    }
+
 
     /**
      * 日期格式化
@@ -60,23 +77,5 @@ public class JacksonConfig {
             return Date.class;
         }
     }
-
-    // public static class LocalDateTimeJsonDeserializer extends JsonDeserializer<LocalDateTime> {
-    //     @Override
-    //     public LocalDateTime deserialize(JsonParser parser, DeserializationContext deserializationContext) throws IOException {
-    //         try {
-    //             return DateUtils.parseDate(parser.getText(), patterns);
-    //         } catch (ParseException e) {
-    //             log.error("", e);
-    //         }
-    //
-    //         return null;
-    //     }
-    //
-    //     @Override
-    //     public Class<?> handledType() {
-    //         return LocalDateTime.class;
-    //     }
-    // }
 
 }

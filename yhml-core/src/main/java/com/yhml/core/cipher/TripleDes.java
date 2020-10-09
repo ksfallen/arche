@@ -1,7 +1,7 @@
 /*
  * Copyright (c) CAIRENHUI.COM
  */
-package com.yhml.core.crypt;
+package com.yhml.core.cipher;
 
 import com.yhml.core.util.PropertiesUtil;
 import org.apache.commons.lang3.StringUtils;

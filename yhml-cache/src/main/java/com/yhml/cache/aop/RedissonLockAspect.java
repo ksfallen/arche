@@ -11,7 +11,7 @@ package com.yhml.cache.aop;
 // import org.redisson.api.RedissonClient;
 //
 // import com.yhml.core.annotaton.CacheLock;
-// import com.yhml.core.base.BaseException;
+// import com.yhml.core.exception.BaseException;
 // import com.yhml.core.util.StringUtil;
 //
 // import lombok.AllArgsConstructor;

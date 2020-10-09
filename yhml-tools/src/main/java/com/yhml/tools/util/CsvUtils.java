@@ -5,12 +5,12 @@ import com.yhml.tools.model.CsvModel;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.lang.Assert;
 import cn.hutool.core.text.csv.*;
+import cn.hutool.core.util.CharsetUtil;
 import cn.hutool.core.util.ReflectUtil;
 import cn.hutool.core.util.StrUtil;
 
 import java.io.File;
 import java.lang.reflect.Field;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
  * @date 2020/8/27
  */
 @Slf4j
-public class CsvUtil extends cn.hutool.core.text.csv.CsvUtil {
+public class CsvUtils extends CsvUtil {
 
     private static CsvReadConfig config = CsvReadConfig.defaultConfig();
 
@@ -32,24 +32,15 @@ public class CsvUtil extends cn.hutool.core.text.csv.CsvUtil {
         config.setContainsHeader(true);
     }
 
-    public static <T extends CsvModel> List<T> read(File file, Class<T> clazz) {
+    public static <T> List<T> read(File file, Class<T> clazz) {
         Assert.notNull(file);
-        CsvReader reader = new CsvReader(config);
-        CsvData data = reader.read(file);
+        CsvData data = new CsvReader(config).read(file);
         log.info("CSV记录总数: {}", data.getRows().size());
         List<String> header = data.getHeader().stream().map(s -> s.trim()).collect(Collectors.toList());
         return data.getRows().stream().map(row -> toBean(header, row, clazz)).collect(Collectors.toList());
     }
 
-    public static <T extends CsvModel> List<T> read(File file, List<String> header, Class<T> clazz) {
-        Assert.notNull(file);
-        CsvReader reader = CsvUtil.getReader();
-        CsvData data = reader.read(file);
-        log.info("CSV记录总数: {}", data.getRows().size());
-        return data.getRows().stream().map(row -> toBean(header, row, clazz)).collect(Collectors.toList());
-    }
-
-    public static <T extends CsvModel> T toBean(List<String> header, CsvRow csvRow, Class<T> clazz) {
+    public static <T> T toBean(List<String> header, CsvRow csvRow, Class<T> clazz) {
         T bean = ReflectUtil.newInstance(clazz);
         for (int i = 0; i < header.size(); i++) {
             // Alias 注解的名字
@@ -61,19 +52,19 @@ public class CsvUtil extends cn.hutool.core.text.csv.CsvUtil {
                 if (field != null) {
                     ReflectUtil.setFieldValue(bean, field, value == null ? "" : value.trim());
                 } else {
-                    log.debug(" CsvRow -> {}出错, 字段[{}]不存在", clazz.getSimpleName(), fieldName);
+                    log.debug("CsvRow -> {}出错, 字段[{}]不存在", clazz.getSimpleName(), fieldName);
                 }
             }
         }
         return bean;
     }
 
-    public static <T extends CsvModel> void writer(List<T> list, String fleName) {
+    public static void writer(List<? extends CsvModel> list, String file) {
         if (list.isEmpty()) {
             return;
         }
-        File newFile = FileUtil.touch(ToolConstants.DOWNLOAD_PATH, fleName);
-        CsvWriter writer = cn.hutool.core.text.csv.CsvUtil.getWriter(newFile, StandardCharsets.UTF_8);
+        File newFile = FileUtil.touch(ToolConstants.DOWNLOAD_PATH, file);
+        CsvWriter writer = CsvUtil.getWriter(newFile, CharsetUtil.CHARSET_UTF_8);
         List<String> data = list.stream().map(t -> t.toCsvData()).collect(Collectors.toList());
         writer.write(list.get(0).toHeader());
         writer.write(data);
@@ -86,8 +77,6 @@ public class CsvUtil extends cn.hutool.core.text.csv.CsvUtil {
                 .sorted(Comparator.comparing(File::lastModified).reversed())
                 .filter(file -> FileUtil.mainName(file).contains(fileName) && FileUtil.extName(file).equals("csv"))
                 .findFirst();
-        File file = op.orElse(null);
-        Assert.notNull(file, "未找到账单文件:" + fileName);
-        return file;
+        return op.orElseThrow(() -> new RuntimeException("未找到账单文件:" + fileName));
     }
 }
