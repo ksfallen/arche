@@ -24,7 +24,7 @@
         <commons-io.version>2.4</commons-io.version>
         <commons-math3.version>3.6.1</commons-math3.version>
         <commons-collections4.version>4.2</commons-collections4.version>
-        <commons-beanutils.version>1.9.3</commons-beanutils.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <baidu-aip.version>4.11.3</baidu-aip.version>
         <fastjson.version>1.2.60</fastjson.version>
         <guava.version>21.0</guava.version>
