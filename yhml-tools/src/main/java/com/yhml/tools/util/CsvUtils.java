@@ -11,6 +11,7 @@ import cn.hutool.core.util.StrUtil;
 
 import java.io.File;
 import java.lang.reflect.Field;
+import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
@@ -59,16 +60,20 @@ public class CsvUtils extends CsvUtil {
         return bean;
     }
 
-    public static void writer(List<? extends CsvModel> list, String file) {
+    public static void writer(List<? extends CsvModel> list, String file, Charset charset) {
         if (list.isEmpty()) {
             return;
         }
         File newFile = FileUtil.touch(ToolConstants.DOWNLOAD_PATH, file);
-        CsvWriter writer = CsvUtil.getWriter(newFile, CharsetUtil.CHARSET_UTF_8);
+        CsvWriter writer = CsvUtil.getWriter(newFile, charset);
         List<String> data = list.stream().map(t -> t.toCsvData()).collect(Collectors.toList());
         writer.write(list.get(0).toHeader());
         writer.write(data);
         writer.close();
+    }
+
+    public static void writer(List<? extends CsvModel> list, String file) {
+        writer(list, file, CharsetUtil.CHARSET_GBK);
     }
 
     public static File getCsvBill(String fileName) {
@@ -77,6 +82,6 @@ public class CsvUtils extends CsvUtil {
                 .sorted(Comparator.comparing(File::lastModified).reversed())
                 .filter(file -> FileUtil.mainName(file).contains(fileName) && FileUtil.extName(file).equals("csv"))
                 .findFirst();
-        return op.orElseThrow(() -> new RuntimeException("未找到账单文件:" + fileName));
+        return op.orElseThrow(() -> new RuntimeException("文件不存在:" + fileName));
     }
 }

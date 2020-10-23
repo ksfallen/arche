@@ -3,6 +3,7 @@ package com.yhml.tools.money.bill;
 import com.yhml.tools.constants.TradeTypeEnum;
 import com.yhml.tools.model.CsvModel;
 import cn.hutool.core.annotation.Alias;
+import cn.hutool.core.util.StrUtil;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -69,7 +70,23 @@ public class AlipayBill extends CsvModel {
     /**
      * 卡转移余额宝
      */
-    public boolean IsFundsTransfer() {
+    public boolean isTransfer2YuerBao() {
         return productName.matches("余额宝-单次转入") && TradeTypeEnum.FUNDS_TRANSFER.equals(tradeType);
+    }
+
+
+    /**
+     * 失败的交易
+     */
+    public boolean isfailTrade() {
+        return "交易关闭".equals(tradeStatus) && StrUtil.isBlank(tradeType);
+    }
+
+
+    /**
+     * 信用卡还款
+     */
+    public boolean isRefundCMB() {
+        return "信用卡还款".equals(productName);
     }
 }

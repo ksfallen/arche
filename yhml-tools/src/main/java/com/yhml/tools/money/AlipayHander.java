@@ -33,23 +33,34 @@ public class AlipayHander implements IMoneyHandler {
         File file = CsvUtils.getCsvBill("alipay_record");
         List<MoneyPro> data = parseBill(file);
         CsvUtils.writer(data, "data.csv");
-        log.info("支付宝转MoneyPro账单, 完成:{}笔", data.size());
+        log.info("MoneyPro账单笔数:{}", data.size());
     }
 
     private List<MoneyPro> parseBill(File file) {
         List<AlipayBill> list = read(file);
         List<MoneyPro> data = new ArrayList<>();
+        int yuebaoCount = 0;
+        int failCount = 0;
         for (AlipayBill model : list) {
             // 过滤余额宝每日收益, 月底统一结算
             if (model.isYueBao()) {
+                yuebaoCount++;
                 continue;
             }
+            // 过滤不成功交易笔数
+            if (model.isfailTrade()) {
+                failCount++;
+                continue;
+            }
+
             try {
                 data.add(toMoneyPro(model));
             } catch (Exception e) {
                 log.error("转换MoneyPro对象出错:{}", model, e);
             }
         }
+        log.info("余额宝收益笔数:{}", yuebaoCount);
+        log.info("未成功交易笔数:{}", failCount);
         return data;
     }
 
@@ -64,9 +75,13 @@ public class AlipayHander implements IMoneyHandler {
             pro.setAccount(AccountEnum.CMB2071.getProAccount());
             pro.setToAccount(AccountEnum.HUABEI.getProAccount());
             pro.setDesc("花呗还款");
-        } else if (model.IsFundsTransfer()) {
+        } else if (model.isTransfer2YuerBao()) {
             pro.setAccount(AccountEnum.CMB2071.getProAccount());
             pro.setToAccount(AccountEnum.YUEBAO.getProAccount());
+        } else if (model.isRefundCMB()) {
+            pro.setAccount(AccountEnum.CMB2071.getProAccount());
+            pro.setToAccount(AccountEnum.CMB1799.getProAccount());
+            pro.setDesc("信用卡还款");
         } else {
             parseCatalog(model, pro);
         }
@@ -94,23 +109,22 @@ public class AlipayHander implements IMoneyHandler {
 
     private void parseCatalog(AlipayBill model, MoneyPro pro) {
         CatalogEnum catalog = CatalogEnum.getProCatalog(model.getProductName(), model.getTradeName());
+
         if (catalog == null) {
-            log.info("没有找到分类, 商品名称:{}, 交易对象:{}", model.getProductName(), model.getTradeName());
+            log.info("分类不存在, 默认分类:购物, 详情:{}", model);
             catalog = CatalogEnum.GW;
             pro.setDesc(model.getTradeName());
         }
 
-        if (catalog.equals(CatalogEnum.GW)) {
-            int hour = DateUtil.parse(model.getTradeTime()).getField(DateField.HOUR);
+        if (catalog.equals(CatalogEnum.GW) || catalog.equals(CatalogEnum.ZC)) {
+            int hour = DateUtil.parse(model.getTradeTime()).getField(DateField.HOUR_OF_DAY);
             if (hour >= 7 && hour <= 9) {
                 catalog = CatalogEnum.ZC;
                 pro.setDesc("早饭");
-            }
-            if (hour >= 11 && hour <= 13) {
+            } else if (hour >= 11 && hour <= 13) {
                 catalog = CatalogEnum.ZC;
                 pro.setDesc("午饭");
-            }
-            if (hour >= 17 && hour <= 19) {
+            } else if (hour >= 17 && hour <= 19) {
                 catalog = CatalogEnum.ZC;
                 pro.setDesc("晚饭");
             }
@@ -131,16 +145,18 @@ public class AlipayHander implements IMoneyHandler {
         List<String> header = new ArrayList<>();
         List<AlipayBill> result = new ArrayList<>();
         for (CsvRow csvRow : data.getRows()) {
-            if (csvRow.getRawList().size() <= 5) {
+            if (csvRow.getRawList().size() == 1) {
                 log.info("{}", csvRow.getRawList());
                 continue;
             }
             if (csvRow.getOriginalLineNumber() == 5) {
                 header = csvRow.getRawList().stream().map(s -> s.trim()).collect(Collectors.toList());
-                // log.info("开始解析 行号={}", csvRow.getOriginalLineNumber() + 1);
+                log.info("开始解析 行号={}", csvRow.getOriginalLineNumber() + 1);
                 continue;
             }
-            result.add(CsvUtils.toBean(header, csvRow,  AlipayBill.class));
+            if (csvRow.getRawList().size() == header.size()) {
+                result.add(CsvUtils.toBean(header, csvRow, AlipayBill.class));
+            }
         }
         return result;
     }

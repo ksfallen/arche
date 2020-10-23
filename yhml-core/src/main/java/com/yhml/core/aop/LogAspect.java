@@ -2,14 +2,16 @@ package com.yhml.core.aop;
 
 import com.yhml.core.util.JsonUtil;
 import com.yhml.core.util.RequestUtil;
+import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.springframework.stereotype.Component;
-import cn.hutool.core.date.TimeInterval;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.Clock;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,27 +40,28 @@ public class LogAspect {
 
     @Around("restController() || logger()")
     public Object around(ProceedingJoinPoint joinPoint) throws Throwable {
-        HttpServletRequest request = RequestUtil.getRequest();
-        if (request != null) {
-            log.info("请求地址:{}, IP:{} ", request.getRequestURI(), RequestUtil.getIpAddress(request));
-        }
-
         String clazzName = joinPoint.getTarget().getClass().getSimpleName();
         String methodName = joinPoint.getSignature().getName();
-        log.info("==> {}.{}, params:{}", clazzName, methodName, toJson(joinPoint.getArgs()));
-        TimeInterval time = new TimeInterval();
-        time.start();
-        Object result = null;
+        // log.info("==> {}.{}, params:{}", clazzName, methodName, JsonUtil.toJson(joinPoint.getArgs()));
 
-        try {
-            result = joinPoint.proceed();
-        } finally {
-            log.info("<== 耗时:{}ms 返回值:{}", time.intervalMs(), toJson(result));
+        long time = Clock.systemDefaultZone().millis();
+        Object result = joinPoint.proceed();
+
+        RequestInfo info = new RequestInfo();
+        HttpServletRequest request = RequestUtil.getRequest();
+        if (request != null) {
+            info.setIp(request.getRemoteAddr());
+            info.setUrl(request.getRequestURL().toString());
+            info.setHttpMethod(request.getMethod());
         }
+        info.setClassMethod(String.format("%s.%s", clazzName, methodName));
+        info.setRequestParams(joinPoint.getArgs());
+        info.setResult(result);
+        info.setSpendTime(Clock.systemDefaultZone().millis() - time);
+        log.info("==> 请求日志 {}", JsonUtil.toJson(joinPoint.getArgs()));
 
         return result;
     }
-
 
     // 获取注解中的值
     // private String getValue(JoinPoint joinPoint) {
@@ -80,7 +83,19 @@ public class LogAspect {
     //     return null;
     // }
 
-    protected String toJson(Object result) {
-        return JsonUtil.toJson(result);
+    @AfterThrowing(pointcut = "restController() || logger()", throwing = "e")
+    public void doAfterThrow(JoinPoint joinPoint, RuntimeException e) {
+        HttpServletRequest request = RequestUtil.getRequest();
+        RequestErrorInfo info = new RequestErrorInfo();
+        if (request != null) {
+            info.setIp(request.getRemoteAddr());
+            info.setUrl(request.getRequestURL().toString());
+            info.setHttpMethod(request.getMethod());
+        }
+        info.setClassMethod(String.format("%s.%s", joinPoint.getSignature().getDeclaringTypeName(), joinPoint.getSignature().getName()));
+        info.setRequestParams(joinPoint.getArgs());
+        info.setException(e);
+        log.info("==> 请求异常 {}", JsonUtil.toJson(joinPoint.getArgs()));
     }
+
 }
